@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"asteria"
+	"github.com/mylxsw/asteria"
 )
 
 func TestConcurrentWrite(t *testing.T) {

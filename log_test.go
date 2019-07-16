@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"asteria"
+	"github.com/mylxsw/asteria"
 )
 
 func TestModule(t *testing.T) {

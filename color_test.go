@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"asteria"
+	"github.com/mylxsw/asteria"
 )
 
 func TestColorText(t *testing.T) {

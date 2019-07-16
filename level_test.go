@@ -1,18 +1,22 @@
-package asteria
+package asteria_test
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/mylxsw/asteria"
+)
 
 func TestGetLevelByName(t *testing.T) {
-	var testData = map[string]Level{
-		"debug":     LevelDebug,
-		"info":      LevelInfo,
-		"emergency": LevelEmergency,
-		"DEBUG":     LevelDebug,
-		"NOTice":    LevelNotice,
+	var testData = map[string]asteria.Level{
+		"debug":     asteria.LevelDebug,
+		"info":      asteria.LevelInfo,
+		"emergency": asteria.LevelEmergency,
+		"DEBUG":     asteria.LevelDebug,
+		"NOTice":    asteria.LevelNotice,
 	}
 
 	for key, val := range testData {
-		if GetLevelByName(key) != val {
+		if asteria.GetLevelByName(key) != val {
 			t.Errorf("测试结果出错: GetLevelByName(%s) != %d", key, val)
 		}
 	}
@@ -20,14 +24,14 @@ func TestGetLevelByName(t *testing.T) {
 }
 
 func TestGetLevelName(t *testing.T) {
-	var testData = map[Level]string{
-		LevelAlert:     "ALERT",
-		LevelEmergency: "EMERGENCY",
-		LevelDebug:     "DEBUG",
+	var testData = map[asteria.Level]string{
+		asteria.LevelAlert:     "ALERT",
+		asteria.LevelEmergency: "EMERGENCY",
+		asteria.LevelDebug:     "DEBUG",
 	}
 
 	for key, val := range testData {
-		if GetLevelName(key) != val {
+		if asteria.GetLevelName(key) != val {
 			t.Errorf("测试结果出错: GetLevelName(%d) != %s", key, val)
 		}
 	}
