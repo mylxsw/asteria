@@ -14,7 +14,7 @@ func TestConcurrentWrite(t *testing.T) {
 
 	var logfile = "./test.log"
 
-	logger.SetWriter(asteria.NewSingleFileWriter(logfile))
+	logger.Writer(asteria.NewSingleFileWriter(logfile))
 
 	rand.Seed(time.Now().Unix())
 	for i := 0; i < 1000; i++ {

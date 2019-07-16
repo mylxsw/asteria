@@ -16,7 +16,7 @@ type Formatter interface {
 // DefaultFormatter 默认日志格式化
 type DefaultFormatter struct{}
 
-// NewDefaultFormatter create a new default formatter
+// NewDefaultFormatter create a new default LogFormatter
 func NewDefaultFormatter() *DefaultFormatter {
 	return &DefaultFormatter{}
 }
@@ -51,7 +51,7 @@ func (formatter DefaultFormatter) Format(colorful bool, currentTime time.Time, m
 // JSONFormatter json输格式化
 type JSONFormatter struct{}
 
-// NewJSONFormatter create a new json formatter
+// NewJSONFormatter create a new json LogFormatter
 func NewJSONFormatter() *JSONFormatter {
 	return &JSONFormatter{}
 }
@@ -79,7 +79,7 @@ func (formatter JSONFormatter) Format(colorful bool, currentTime time.Time, modu
 	})
 
 	message := string(res)
-	// if colorful {
+	// if Colorful {
 	// 	datetime = ColorTextWrap(TextLightWhite, datetime)
 	// 	message = ColorTextWrap(TextLightGrey, message)
 	// }

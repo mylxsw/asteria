@@ -34,19 +34,19 @@ func Close() error {
 	return GetDefaultModule().Close()
 }
 
-// SetLevel 设置日志输出级别
+// LogLevel 设置日志输出级别
 func SetLevel(level Level) *Logger {
-	return GetDefaultModule().SetLevel(level)
+	return GetDefaultModule().LogLevel(level)
 }
 
-// SetFormatter 设置日志格式化器
+// Formatter 设置日志格式化器
 func SetFormatter(formatter Formatter) *Logger {
-	return GetDefaultModule().SetFormatter(formatter)
+	return GetDefaultModule().Formatter(formatter)
 }
 
-// SetWriter 设置日志输出器
+// Writer 设置日志输出器
 func SetWriter(writer Writer) *Logger {
-	return GetDefaultModule().SetWriter(writer)
+	return GetDefaultModule().Writer(writer)
 }
 
 func WithContext(context C) *ContextLogger {

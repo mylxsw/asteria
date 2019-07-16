@@ -9,58 +9,78 @@ import (
 
 // Logger 日志对象
 type Logger struct {
-	moduleName   string
-	level        func() Level
-	formatter    Formatter
-	writer       Writer
-	timeLocation func() *time.Location
-	colorful     func() bool
+	moduleName    string
+	level         func() Level
+	formatter     Formatter
+	writer        Writer
+	timeLocation  func() *time.Location
+	colorful      func() bool
+	fileLine      func() bool
+	globalContext func() func(c LogContext)
 }
 
 var loggers = make(map[string]*Logger)
 var moduleLock sync.Mutex
 
-// defaultConfig 默认配置对象
-type defaultConfig struct {
-	logLevel     Level
-	formatter    Formatter
-	writer       Writer
-	timeLocation *time.Location
-	colorful     bool
+// DefaultConfig 默认配置对象
+type DefaultConfig struct {
+	LogLevel      Level
+	LogFormatter  Formatter
+	LogWriter     Writer
+	TimeLocation  *time.Location
+	Colorful      bool
+	WithFileLine  bool
+	GlobalContext func(c LogContext)
 }
 
 // 默认配置信息
-var defaultLogConfig = defaultConfig{
-	logLevel:     LevelDebug,
-	formatter:    NewDefaultFormatter(),
-	writer:       NewDefaultWriter(),
-	timeLocation: time.Local,
-	colorful:     true,
+var defaultLogConfig = DefaultConfig{
+	LogLevel:     LevelDebug,
+	LogFormatter: NewDefaultFormatter(),
+	LogWriter:    NewDefaultWriter(),
+	TimeLocation: time.Local,
+	Colorful:     true,
+	WithFileLine: false,
 }
 
-// SetDefaultLocation set default time location
-func SetDefaultLocation(loc *time.Location) {
-	defaultLogConfig.timeLocation = loc
+// Default return default log config
+func Default() DefaultConfig {
+	return defaultLogConfig
 }
 
-// SetDefaultColorful set default colorful property
-func SetDefaultColorful(colorful bool) {
-	defaultLogConfig.colorful = colorful
+// DefaultWithFileLine set whether output file & line
+func DefaultWithFileLine(enable bool) {
+	defaultLogConfig.WithFileLine = enable
 }
 
-// SetDefaultLevel 设置全局默认日志输出级别
-func SetDefaultLevel(level Level) {
-	defaultLogConfig.logLevel = level
+// DefaultLocation set default time location
+func DefaultLocation(loc *time.Location) {
+	defaultLogConfig.TimeLocation = loc
 }
 
-// SetDefaultFormatter 设置全局默认的日志输出格式化器
-func SetDefaultFormatter(formatter Formatter) {
-	defaultLogConfig.formatter = formatter
+// DefaultWithColor set default Colorful property
+func DefaultWithColor(colorful bool) {
+	defaultLogConfig.Colorful = colorful
 }
 
-// SetDefaultWriter 设置全局默认的日志输出器
-func SetDefaultWriter(writer Writer) {
-	defaultLogConfig.writer = writer
+// DefaultLogLevel 设置全局默认日志输出级别
+func DefaultLogLevel(level Level) {
+	defaultLogConfig.LogLevel = level
+}
+
+// DefaultLogFormatter 设置全局默认的日志输出格式化器
+func DefaultLogFormatter(formatter Formatter) {
+	defaultLogConfig.LogFormatter = formatter
+}
+
+// DefaultLogWriter 设置全局默认的日志输出器
+func DefaultLogWriter(writer Writer) {
+	defaultLogConfig.LogWriter = writer
+}
+
+// GlobalContext set a global context
+func GlobalContext(f func(c LogContext)) {
+	defaultLogConfig.GlobalContext = f
 }
 
 // Module 获取指定模块的日志输出对象
@@ -75,13 +95,19 @@ func Module(moduleName string) *Logger {
 	logger := &Logger{
 		moduleName: moduleName,
 		level: func() Level {
-			return defaultLogConfig.logLevel
+			return defaultLogConfig.LogLevel
 		},
 		timeLocation: func() *time.Location {
-			return defaultLogConfig.timeLocation
+			return defaultLogConfig.TimeLocation
 		},
 		colorful: func() bool {
-			return defaultLogConfig.colorful
+			return defaultLogConfig.Colorful
+		},
+		fileLine: func() bool {
+			return defaultLogConfig.WithFileLine
+		},
+		globalContext: func() func(c LogContext) {
+			return defaultLogConfig.GlobalContext
 		},
 	}
 
@@ -90,18 +116,40 @@ func Module(moduleName string) *Logger {
 	return logger
 }
 
-// SetTimeLocation set time location for module
-func (module *Logger) SetTimeLocation(loc *time.Location) {
+// Location set time location for module
+func (module *Logger) Location(loc *time.Location) *Logger {
 	module.timeLocation = func() *time.Location {
 		return loc
 	}
+
+	return module
 }
 
-// SetColorful set colorful property
-func (module *Logger) SetColorful(colorful bool) {
+// WithFileLine set whether output file & line
+func (module *Logger) WithFileLine(enable bool) *Logger {
+	module.fileLine = func() bool {
+		return enable
+	}
+
+	return module
+}
+
+// GlobalContext set a global context
+func (module *Logger) GlobalContext(f func(c LogContext)) *Logger {
+	module.globalContext = func() func(c LogContext) {
+		return f
+	}
+
+	return module
+}
+
+// WithColor set Colorful property
+func (module *Logger) WithColor(colorful bool) *Logger {
 	module.colorful = func() bool {
 		return colorful
 	}
+
+	return module
 }
 
 func (module *Logger) Output(callDepth int, level Level, userContext C, v ...interface{}) string {
@@ -109,16 +157,25 @@ func (module *Logger) Output(callDepth int, level Level, userContext C, v ...int
 		userContext = C{}
 	}
 
-	context := LogContext{
+	logCtx := LogContext{
 		UserContext: userContext,
 		SysContext:  C{},
 	}
 
-	_, f, line, _ := runtime.Caller(callDepth)
-	context.SysContext["file"] = f
-	context.SysContext["line"] = line
+	if module.fileLine() {
+		_, f, line, _ := runtime.Caller(callDepth)
+		logCtx.SysContext["file"] = f
+		logCtx.SysContext["line"] = line
+	}
 
-	message := module.getFormatter().Format(module.colorful(), time.Now().In(module.timeLocation()), module.moduleName, level, context, v...)
+	if module.globalContext != nil {
+		cf := module.globalContext()
+		if cf != nil {
+			cf(logCtx)
+		}
+	}
+
+	message := module.getFormatter().Format(module.colorful(), time.Now().In(module.timeLocation()), module.moduleName, level, logCtx, v...)
 	// 低于设定日志级别的日志不会输出
 	if level >= module.level() {
 		if err := module.getWriter().Write(level, message); err != nil {
@@ -134,8 +191,8 @@ func GetDefaultModule() *Logger {
 	return Module("default")
 }
 
-// SetLevel 设置日志输出级别
-func (module *Logger) SetLevel(level Level) *Logger {
+// LogLevel 设置日志输出级别
+func (module *Logger) LogLevel(level Level) *Logger {
 	module.level = func() Level {
 		return level
 	}
@@ -143,8 +200,8 @@ func (module *Logger) SetLevel(level Level) *Logger {
 	return module
 }
 
-// SetFormatter 设置日志格式化器
-func (module *Logger) SetFormatter(formatter Formatter) *Logger {
+// Formatter 设置日志格式化器
+func (module *Logger) Formatter(formatter Formatter) *Logger {
 	module.formatter = formatter
 	return module
 }
@@ -154,14 +211,14 @@ func (module *Logger) getFormatter() Formatter {
 	defer moduleLock.Unlock()
 
 	if module.formatter == nil {
-		module.SetFormatter(defaultLogConfig.formatter)
+		module.Formatter(defaultLogConfig.LogFormatter)
 	}
 
 	return module.formatter
 }
 
-// SetWriter 设置日志输出器
-func (module *Logger) SetWriter(writer Writer) *Logger {
+// Writer 设置日志输出器
+func (module *Logger) Writer(writer Writer) *Logger {
 	module.writer = writer
 	return module
 }
@@ -171,7 +228,7 @@ func (module *Logger) getWriter() Writer {
 	defer moduleLock.Unlock()
 
 	if module.writer == nil {
-		module.SetWriter(defaultLogConfig.writer)
+		module.Writer(defaultLogConfig.LogWriter)
 	}
 
 	return module.writer
@@ -182,7 +239,7 @@ func (module *Logger) ReOpen() error {
 	return module.getWriter().ReOpen()
 }
 
-// Close close a log writer
+// Close close a log LogWriter
 func (module *Logger) Close() error {
 	return module.getWriter().Close()
 }

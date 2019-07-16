@@ -13,33 +13,33 @@ type Writer interface {
 	Close() error
 }
 
-// DefaultWriter 默认日志输出器
-type DefaultWriter struct{}
+// StdoutWriter 默认日志输出器
+type StdoutWriter struct{}
 
-// NewDefaultWriter create a new default writer
-func NewDefaultWriter() *DefaultWriter {
-	return &DefaultWriter{}
+// NewDefaultWriter create a new default LogWriter
+func NewDefaultWriter() *StdoutWriter {
+	return &StdoutWriter{}
 }
 
 // Write 日志输出
-func (writer DefaultWriter) Write(level Level, message string) error {
+func (writer StdoutWriter) Write(level Level, message string) error {
 	fmt.Println(message)
 	return nil
 }
 
 // ReOpen reopen a log file
-func (writer DefaultWriter) ReOpen() error {
+func (writer StdoutWriter) ReOpen() error {
 	// do nothing
 	return nil
 }
 
 // Close close a log file
-func (writer DefaultWriter) Close() error {
+func (writer StdoutWriter) Close() error {
 	// do nothing
 	return nil
 }
 
-// SingleFileWriter is a writer which write logs to file
+// SingleFileWriter is a LogWriter which write logs to file
 type SingleFileWriter struct {
 	filename string
 	file     *os.File
