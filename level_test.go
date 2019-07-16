@@ -17,7 +17,7 @@ func TestGetLevelByName(t *testing.T) {
 
 	for key, val := range testData {
 		if asteria.GetLevelByName(key) != val {
-			t.Errorf("测试结果出错: GetLevelByName(%s) != %d", key, val)
+			t.Errorf("Test Failed: GetLevelByName(%s) != %d", key, val)
 		}
 	}
 
@@ -32,7 +32,7 @@ func TestGetLevelName(t *testing.T) {
 
 	for key, val := range testData {
 		if asteria.GetLevelName(key) != val {
-			t.Errorf("测试结果出错: GetLevelName(%d) != %s", key, val)
+			t.Errorf("Test Failed: GetLevelName(%d) != %s", key, val)
 		}
 	}
 }

@@ -2,7 +2,6 @@ package asteria_test
 
 import (
 	"testing"
-	"time"
 
 	"github.com/mylxsw/asteria"
 )
@@ -10,8 +9,8 @@ import (
 func TestModule(t *testing.T) {
 	// DefaultLogLevel(LevelCritical)
 
-	loc, _ := time.LoadLocation("Asia/Chongqing")
-	asteria.DefaultLocation(loc)
+	// loc, _ := time.LoadLocation("Asia/Chongqing")
+	// asteria.DefaultLocation(loc)
 	// asteria.DefaultWithColor(false)
 	// asteria.DefaultWithFileLine(true)
 
@@ -34,7 +33,7 @@ func TestModule(t *testing.T) {
 	asteria.Module("user").Formatter(asteria.NewJSONFormatter()).Error("user create failed")
 
 	asteria.WithContext(nil).Debug("error occur")
-	asteria.Module("purchase").Formatter(asteria.NewJSONFormatter()).WithContext(map[string]interface{}{}).Infof("用户 %s 已创建", "mylxsw")
+	asteria.Module("purchase").Formatter(asteria.NewJSONFormatter()).WithContext(nil).Infof("用户 %s 已创建", "mylxsw")
 
 	userLog := asteria.Module("user")
 	userLog.WithContext(asteria.C{

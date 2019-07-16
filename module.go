@@ -2,7 +2,7 @@ package asteria
 
 import (
 	"fmt"
-	"runtime"
+	"strings"
 	"sync"
 	"time"
 )
@@ -50,7 +50,7 @@ func Default() DefaultConfig {
 	return defaultLogConfig
 }
 
-// DefaultWithFileLine set whether output file & line
+// DefaultWithFileLine set whether output file & Line
 func DefaultWithFileLine(enable bool) {
 	moduleLock.Lock()
 	defer moduleLock.Unlock()
@@ -168,7 +168,7 @@ func (module *Logger) Location(loc *time.Location) *Logger {
 	return module
 }
 
-// WithFileLine set whether output file & line
+// WithFileLine set whether output file & Line
 func (module *Logger) WithFileLine(enable bool) *Logger {
 	module.lock.Lock()
 	defer module.lock.Unlock()
@@ -214,10 +214,20 @@ func (module *Logger) Output(callDepth int, level Level, userContext C, v ...int
 		SysContext:  C{},
 	}
 
-	if module.fileLine() {
-		_, f, line, _ := runtime.Caller(callDepth)
-		logCtx.SysContext["file"] = f
-		logCtx.SysContext["line"] = line
+	moduleName := module.moduleName
+
+	if moduleName == "" || module.fileLine() {
+		cg := CallGraph(3)
+		if module.fileLine() {
+			logCtx.SysContext["file"] = cg.FileName
+			logCtx.SysContext["line"] = cg.Line
+			logCtx.SysContext["package"] = cg.PackageName
+			logCtx.SysContext["func"] = cg.FuncName
+		}
+
+		if moduleName == "" {
+			moduleName = strings.ReplaceAll(cg.PackageName, "/", ".")
+		}
 	}
 
 	if module.globalContext != nil {
@@ -227,7 +237,7 @@ func (module *Logger) Output(callDepth int, level Level, userContext C, v ...int
 		}
 	}
 
-	message := module.getFormatter().Format(module.colorful(), time.Now().In(module.timeLocation()), module.moduleName, level, logCtx, v...)
+	message := module.getFormatter().Format(module.colorful(), time.Now().In(module.timeLocation()), moduleName, level, logCtx, v...)
 	// 低于设定日志级别的日志不会输出
 	if level >= module.level() {
 		if err := module.getWriter().Write(level, message); err != nil {
@@ -240,7 +250,7 @@ func (module *Logger) Output(callDepth int, level Level, userContext C, v ...int
 
 // GetDefaultModule 获取默认的模块日志
 func GetDefaultModule() *Logger {
-	return Module("default")
+	return Module("")
 }
 
 // LogLevel 设置日志输出级别
