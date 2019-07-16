@@ -17,10 +17,12 @@ type Logger struct {
 	colorful      func() bool
 	fileLine      func() bool
 	globalContext func() func(c LogContext)
+
+	lock sync.RWMutex
 }
 
 var loggers = make(map[string]*Logger)
-var moduleLock sync.Mutex
+var moduleLock sync.RWMutex
 
 // DefaultConfig 默认配置对象
 type DefaultConfig struct {
@@ -50,36 +52,57 @@ func Default() DefaultConfig {
 
 // DefaultWithFileLine set whether output file & line
 func DefaultWithFileLine(enable bool) {
+	moduleLock.Lock()
+	defer moduleLock.Unlock()
+
 	defaultLogConfig.WithFileLine = enable
 }
 
 // DefaultLocation set default time location
 func DefaultLocation(loc *time.Location) {
+	moduleLock.Lock()
+	defer moduleLock.Unlock()
+
 	defaultLogConfig.TimeLocation = loc
 }
 
 // DefaultWithColor set default Colorful property
 func DefaultWithColor(colorful bool) {
+	moduleLock.Lock()
+	defer moduleLock.Unlock()
+
 	defaultLogConfig.Colorful = colorful
 }
 
 // DefaultLogLevel 设置全局默认日志输出级别
 func DefaultLogLevel(level Level) {
+	moduleLock.Lock()
+	defer moduleLock.Unlock()
+
 	defaultLogConfig.LogLevel = level
 }
 
 // DefaultLogFormatter 设置全局默认的日志输出格式化器
 func DefaultLogFormatter(formatter Formatter) {
+	moduleLock.Lock()
+	defer moduleLock.Unlock()
+
 	defaultLogConfig.LogFormatter = formatter
 }
 
 // DefaultLogWriter 设置全局默认的日志输出器
 func DefaultLogWriter(writer Writer) {
+	moduleLock.Lock()
+	defer moduleLock.Unlock()
+
 	defaultLogConfig.LogWriter = writer
 }
 
 // GlobalContext set a global context
 func GlobalContext(f func(c LogContext)) {
+	moduleLock.Lock()
+	defer moduleLock.Unlock()
+
 	defaultLogConfig.GlobalContext = f
 }
 
@@ -94,19 +117,36 @@ func Module(moduleName string) *Logger {
 
 	logger := &Logger{
 		moduleName: moduleName,
+		formatter:  defaultLogConfig.LogFormatter,
+		writer:     defaultLogConfig.LogWriter,
 		level: func() Level {
+			moduleLock.RLock()
+			defer moduleLock.RUnlock()
+
 			return defaultLogConfig.LogLevel
 		},
 		timeLocation: func() *time.Location {
+			moduleLock.RLock()
+			defer moduleLock.RUnlock()
+
 			return defaultLogConfig.TimeLocation
 		},
 		colorful: func() bool {
+			moduleLock.RLock()
+			defer moduleLock.RUnlock()
+
 			return defaultLogConfig.Colorful
 		},
 		fileLine: func() bool {
+			moduleLock.RLock()
+			defer moduleLock.RUnlock()
+
 			return defaultLogConfig.WithFileLine
 		},
 		globalContext: func() func(c LogContext) {
+			moduleLock.RLock()
+			defer moduleLock.RUnlock()
+
 			return defaultLogConfig.GlobalContext
 		},
 	}
@@ -118,6 +158,9 @@ func Module(moduleName string) *Logger {
 
 // Location set time location for module
 func (module *Logger) Location(loc *time.Location) *Logger {
+	module.lock.Lock()
+	defer module.lock.Unlock()
+
 	module.timeLocation = func() *time.Location {
 		return loc
 	}
@@ -127,6 +170,9 @@ func (module *Logger) Location(loc *time.Location) *Logger {
 
 // WithFileLine set whether output file & line
 func (module *Logger) WithFileLine(enable bool) *Logger {
+	module.lock.Lock()
+	defer module.lock.Unlock()
+
 	module.fileLine = func() bool {
 		return enable
 	}
@@ -136,6 +182,9 @@ func (module *Logger) WithFileLine(enable bool) *Logger {
 
 // GlobalContext set a global context
 func (module *Logger) GlobalContext(f func(c LogContext)) *Logger {
+	module.lock.Lock()
+	defer module.lock.Unlock()
+
 	module.globalContext = func() func(c LogContext) {
 		return f
 	}
@@ -145,6 +194,9 @@ func (module *Logger) GlobalContext(f func(c LogContext)) *Logger {
 
 // WithColor set Colorful property
 func (module *Logger) WithColor(colorful bool) *Logger {
+	module.lock.Lock()
+	defer module.lock.Unlock()
+
 	module.colorful = func() bool {
 		return colorful
 	}
@@ -193,6 +245,9 @@ func GetDefaultModule() *Logger {
 
 // LogLevel 设置日志输出级别
 func (module *Logger) LogLevel(level Level) *Logger {
+	module.lock.Lock()
+	defer module.lock.Unlock()
+
 	module.level = func() Level {
 		return level
 	}
@@ -202,34 +257,32 @@ func (module *Logger) LogLevel(level Level) *Logger {
 
 // Formatter 设置日志格式化器
 func (module *Logger) Formatter(formatter Formatter) *Logger {
+	module.lock.Lock()
+	defer module.lock.Unlock()
+
 	module.formatter = formatter
 	return module
 }
 
 func (module *Logger) getFormatter() Formatter {
-	moduleLock.Lock()
-	defer moduleLock.Unlock()
-
-	if module.formatter == nil {
-		module.Formatter(defaultLogConfig.LogFormatter)
-	}
+	module.lock.RLock()
+	defer module.lock.RUnlock()
 
 	return module.formatter
 }
 
 // Writer 设置日志输出器
 func (module *Logger) Writer(writer Writer) *Logger {
+	module.lock.Lock()
+	defer module.lock.Unlock()
+
 	module.writer = writer
 	return module
 }
 
 func (module *Logger) getWriter() Writer {
-	moduleLock.Lock()
-	defer moduleLock.Unlock()
-
-	if module.writer == nil {
-		module.Writer(defaultLogConfig.LogWriter)
-	}
+	module.lock.RLock()
+	defer module.lock.RUnlock()
 
 	return module.writer
 }
