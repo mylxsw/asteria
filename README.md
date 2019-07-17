@@ -64,7 +64,7 @@ When multiple Filters are specified, multiple Filters are executed in the order 
 #### Module Filter
 
     var logger = log.Module("asteria")
-    logger..AddFilter(func(filter log.Filter) log.Filter {
+    logger.AddFilter(func(filter log.Filter) log.Filter {
         return func(f formatter.Format) {
             // filter(f)
             f.Level = level.Emergency
