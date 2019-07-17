@@ -6,24 +6,24 @@
 [![codecov](https://codecov.io/gh/mylxsw/asteria/branch/master/graph/badge.svg)](https://codecov.io/gh/mylxsw/asteria)
 [![GoDoc](https://godoc.org/github.com/mylxsw/asteria?status.svg)](https://godoc.org/github.com/mylxsw/asteria)
 
-**Asteria** is a log library for go.
+**Asteria** is a logging library for go.
 
 The easiest way to write a log
 
-    asteria.Debug("细雨微风岸，危樯独夜舟")
-    asteria.Error("月上柳梢头，人约黄昏后")
-    asteria.WithContext(asteria.C{
+    log.Debug("细雨微风岸，危樯独夜舟")
+    log.Error("月上柳梢头，人约黄昏后")
+    log.WithContext(log.C{
         "user_id":  123,
         "username": "Tom",
     }).Warningf("君子坦荡荡，小人常戚戚")
 
 Log according to different modules
 
-    var logger = asteria.Module("asteria.user.enterprise.jobs")
+    var logger = log.Module("asteria.user.enterprise.jobs")
        
     logger.Debug("细雨微风岸，危樯独夜舟")
     logger.Error("月上柳梢头，人约黄昏后")
-    logger.WithContext(asteria.C{
+    logger.WithContext(log.C{
         "user_id":  123,
         "username": "Tom",
     }).Warningf("君子坦荡荡，小人常戚戚")
@@ -32,10 +32,10 @@ Log according to different modules
 
 ## Output the file line number of the caller
 
-    # default display file line number 
-    asteria.DefaultWithFileLine(true)
-    # display file line number for individual modules
-    asteria.Module("asteria").WithFileLine(true)
+    // default display file line number 
+    log.DefaultWithFileLine(true)
+    // display file line number for individual modules
+    log.Module("asteria").WithFileLine(true)
 
 ### Filter
 
@@ -45,36 +45,36 @@ When multiple Filters are specified, multiple Filters are executed in the order 
 
 #### Global Filter
 
-    asteria.AddGlobalFilter(func(filter asteria.Filter) asteria.Filter {
-		return func(f formatter.Format) {
-			// if f.Level == level.Debug {
-			// 	return
-			// }
-
-			f.Context.UserContext["user_id"] = 123
+    log.AddGlobalFilter(func(filter log.Filter) log.Filter {
+        return func(f formatter.Format) {
+            // if f.Level == level.Debug {
+            //     return
+            // }
+            
+            f.Context.UserContext["user_id"] = 123
             
             // Not calling filter(f) will cancel the output of the log
-			filter(f)
-		}
-	})
+            filter(f)
+        }
+    })
 
 #### Module Filter
 
-    var logger = asteria.Module("asteria")
-    logger..AddFilter(func(filter asteria.Filter) asteria.Filter {
-		return func(f formatter.Format) {
-			// filter(f)
-			f.Level = level.Emergency
-			filter(f)
-		}
-	})
+    var logger = log.Module("asteria")
+    logger..AddFilter(func(filter log.Filter) log.Filter {
+        return func(f formatter.Format) {
+            // filter(f)
+            f.Level = level.Emergency
+            filter(f)
+        }
+    })
 
 ### Log Formatter
 
 Asteria supports custom log formats, just implement the `formatter.Formatter` interface.
     
     type Formatter interface {
-    	Format(f Format) string
+        Format(f Format) string
     }
 
 Three types of log formatting methods are provided by default
@@ -88,17 +88,17 @@ Three types of log formatting methods are provided by default
 Use the default format, no need to make any settings, you can also specify
 
     // Set the default module log format
-    asteria.Formatter(formatter.NewDefaultFormatter())
+    log.Formatter(formatter.NewDefaultFormatter())
     // Or
-    asteria.Default().Formatter(formatter.NewDefaultFormatter())
+    log.Default().Formatter(formatter.NewDefaultFormatter())
     // Set the log format of the specified module
-    asteria.Module("asteria").Formatter(formatter.NewDefaultFormatter())
+    log.Module("asteria").Formatter(formatter.NewDefaultFormatter())
 
 Format is as follows
 
     [RFC3339 formatted time] [logLevel] moduleName logMessage {logContext}
 
-The module name field is specified using the `asteria.Module` method, and the default log module is automatically generated based on the package name of the caller. Context information mainly consists of two parts
+The module name field is specified using the `log.Module` method, and the default log module is automatically generated based on the package name of the caller. Context information mainly consists of two parts
 
 - Fields starting with `#` are automatically set by the system
 - Other fields are context information set by the user using `WithContext`
@@ -107,16 +107,16 @@ Sample log output
 
 ![](https://ssl.aicode.cc/2019-07-17-15633539363228.jpg)
 
-> You can set the default color output by `asteria.DefaultWithColor(false)` or set a module to turn off color output via `asteria.Module("asteria").WithColor(false)`.
+> You can set the default color output by `log.DefaultWithColor(false)` or set a module to turn off color output via `log.Module("asteria").WithColor(false)`.
 
 #### Json with Time
 
     // Set the default module log format
-    asteria.Formatter(formatter.NewJSONWithTimeFormatter())
+    log.Formatter(formatter.NewJSONWithTimeFormatter())
     // Or
-    asteria.Default().Formatter(formatter.NewJSONWithTimeFormatter())
+    log.Default().Formatter(formatter.NewJSONWithTimeFormatter())
     // Set the log format of the specified module
-    asteria.Module("asteria").Formatter(formatter.NewJSONWithTimeFormatter())
+    log.Module("asteria").Formatter(formatter.NewJSONWithTimeFormatter())
  
 Sample log output
 
@@ -125,11 +125,11 @@ Sample log output
 #### Json 
 
     // Set the default module log format
-    asteria.Formatter(formatter.NewJSONFormatter())
+    log.Formatter(formatter.NewJSONFormatter())
     // Or
-    asteria.Default().Formatter(formatter.NewJSONFormatter())
+    log.Default().Formatter(formatter.NewJSONFormatter())
     // Set the log format of the specified module
-    asteria.Module("asteria").Formatter(formatter.NewJSONFormatter())
+    log.Module("asteria").Formatter(formatter.NewJSONFormatter())
 
 Sample log output
 
@@ -153,26 +153,26 @@ Three types of log output methods are provided by default.
 The default output mode is **standard output**, no need to make any settings, of course, you can also specify
 
     // Set the default module log output
-    asteria.Writer(writer.NewStdoutWriter())
+    log.Writer(writer.NewStdoutWriter())
     // can also be like this
-    asteria.Default().Writer(writer.NewStdoutWriter())
+    log.Default().Writer(writer.NewStdoutWriter())
     // Set the log format of the specified module
-    asteria.Module("asteria").Writer(writer.NewStdoutWriter())
+    log.Module("asteria").Writer(writer.NewStdoutWriter())
 
 #### File
 
     // Set the default module log output
-    asteria.Writer(writer.NewSingleFileWriter("/var/log/asteria.log"))
+    log.Writer(writer.NewSingleFileWriter("/var/log/asteria.log"))
     // can also be like this
-    asteria.Default().Writer(writer.NewSingleFileWriter("/var/log/asteria.log"))
+    log.Default().Writer(writer.NewSingleFileWriter("/var/log/asteria.log"))
     // Set the log format of the specified module
-    asteria.Module("asteria").Writer(writer.NewSingleFileWriter("/var/log/asteria.log"))
+    log.Module("asteria").Writer(writer.NewSingleFileWriter("/var/log/asteria.log"))
 
 #### Syslog
 
     // Set the default module log output
-    asteria.Writer(writer.NewSyslogWriter("", "", syslog.LOG_DEBUG | syslog.LOG_SYSLOG, "asteria"))
+    log.Writer(writer.NewSyslogWriter("", "", syslog.LOG_DEBUG | syslog.LOG_SYSLOG, "asteria"))
     // can also be like this
-    asteria.Default().Writer(writer.NewSyslogWriter("", "", syslog.LOG_DEBUG | syslog.LOG_SYSLOG, "asteria"))
+    log.Default().Writer(writer.NewSyslogWriter("", "", syslog.LOG_DEBUG | syslog.LOG_SYSLOG, "asteria"))
     // Set the log format of the specified module
-    asteria.Module("asteria").Writer(writer.NewSyslogWriter("", "", syslog.LOG_DEBUG | syslog.LOG_SYSLOG, "asteria"))
+    log.Module("asteria").Writer(writer.NewSyslogWriter("", "", syslog.LOG_DEBUG | syslog.LOG_SYSLOG, "asteria"))

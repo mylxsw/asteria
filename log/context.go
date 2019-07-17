@@ -1,4 +1,4 @@
-package asteria
+package log
 
 import (
 	"fmt"

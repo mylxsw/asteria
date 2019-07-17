@@ -4,14 +4,14 @@ Package asteria is a logging library for go with module support.
 	package main
 
 	import(
-		"github.com/mylxsw/asteria"
+		"github.com/mylxsw/asteria/log"
 	)
 
-	var logger = asteria.Module("toolkit.process")
+	var logger = log.Module("toolkit.process")
 
 	func main() {
 		logger.Debugf("xxxx: %s, xxx", "ooo")
-		logger.WithContext(asteria.C{
+		logger.WithContext(log.C{
 			"id": 123,
 			"name": "lixiaoyao",
 		}).Debugf("Hello, %s", "world")
