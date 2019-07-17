@@ -9,8 +9,8 @@ import (
 // StdoutWriter 默认日志输出器
 type StdoutWriter struct{}
 
-// NewDefaultWriter create a new default LogWriter
-func NewDefaultWriter() *StdoutWriter {
+// NewStdoutWriter create a new default LogWriter
+func NewStdoutWriter() *StdoutWriter {
 	return &StdoutWriter{}
 }
 

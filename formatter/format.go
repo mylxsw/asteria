@@ -13,10 +13,19 @@ type LogContext struct {
 	SysContext  map[string]interface{}
 }
 
+type Format struct {
+	Colorful bool
+	Time     time.Time
+	Module   string
+	Level    level.Level
+	Context  LogContext
+	Messages []interface{}
+}
+
 // Formatter 日志格式化接口
 type Formatter interface {
 	// Format 日志格式化
-	Format(colorful bool, currentTime time.Time, moduleName string, le level.Level, context LogContext, v ...interface{}) string
+	Format(f Format) string
 }
 
 func formatContext(context map[string]interface{}) string {

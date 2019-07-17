@@ -22,7 +22,7 @@ func ReOpenAll() map[string]error {
 
 // ReOpen reopen default log file
 func ReOpen() error {
-	return GetDefaultModule().ReOpen()
+	return Default().ReOpen()
 }
 
 // CloseAll close all loggers
@@ -37,88 +37,88 @@ func CloseAll() map[string]error {
 
 // Close default log file
 func Close() error {
-	return GetDefaultModule().Close()
+	return Default().Close()
 }
 
 // LogLevel 设置日志输出级别
 func SetLevel(le level.Level) *Logger {
-	return GetDefaultModule().LogLevel(le)
+	return Default().LogLevel(le)
 }
 
 // Formatter 设置日志格式化器
 func SetFormatter(f formatter.Formatter) *Logger {
-	return GetDefaultModule().Formatter(f)
+	return Default().Formatter(f)
 }
 
 // Writer 设置日志输出器
 func SetWriter(w writer.Writer) *Logger {
-	return GetDefaultModule().Writer(w)
+	return Default().Writer(w)
 }
 
 func WithContext(context C) *ContextLogger {
-	return GetDefaultModule().WithContext(context)
+	return Default().WithContext(context)
 }
 
-func Emergency(v ...interface{}) string {
-	return GetDefaultModule().Output(3, level.Emergency, nil, v...)
+func Emergency(v ...interface{}) {
+	Default().Output(3, level.Emergency, nil, v...)
 }
 
-func Alert(v ...interface{}) string {
-	return GetDefaultModule().Output(3, level.Alert, nil, v...)
+func Alert(v ...interface{}) {
+	Default().Output(3, level.Alert, nil, v...)
 }
 
-func Critical(v ...interface{}) string {
-	return GetDefaultModule().Output(3, level.Critical, nil, v...)
+func Critical(v ...interface{}) {
+	Default().Output(3, level.Critical, nil, v...)
 }
 
-func Error(v ...interface{}) string {
-	return GetDefaultModule().Output(3, level.Error, nil, v...)
+func Error(v ...interface{}) {
+	Default().Output(3, level.Error, nil, v...)
 }
 
-func Warning(v ...interface{}) string {
-	return GetDefaultModule().Output(3, level.Warning, nil, v...)
+func Warning(v ...interface{}) {
+	Default().Output(3, level.Warning, nil, v...)
 }
 
-func Notice(v ...interface{}) string {
-	return GetDefaultModule().Output(3, level.Notice, nil, v...)
+func Notice(v ...interface{}) {
+	Default().Output(3, level.Notice, nil, v...)
 }
 
-func Info(v ...interface{}) string {
-	return GetDefaultModule().Output(3, level.Info, nil, v...)
+func Info(v ...interface{}) {
+	Default().Output(3, level.Info, nil, v...)
 }
 
-func Debug(v ...interface{}) string {
-	return GetDefaultModule().Output(3, level.Debug, nil, v...)
+func Debug(v ...interface{}) {
+	Default().Output(3, level.Debug, nil, v...)
 }
 
-func Emergencyf(format string, v ...interface{}) string {
-	return GetDefaultModule().Output(3, level.Emergency, nil, fmt.Sprintf(format, v...))
+func Emergencyf(format string, v ...interface{}) {
+	Default().Output(3, level.Emergency, nil, fmt.Sprintf(format, v...))
 }
 
-func Alertf(format string, v ...interface{}) string {
-	return GetDefaultModule().Output(3, level.Alert, nil, fmt.Sprintf(format, v...))
+func Alertf(format string, v ...interface{}) {
+	Default().Output(3, level.Alert, nil, fmt.Sprintf(format, v...))
 }
 
-func Criticalf(format string, v ...interface{}) string {
-	return GetDefaultModule().Output(3, level.Critical, nil, fmt.Sprintf(format, v...))
+func Criticalf(format string, v ...interface{}) {
+	Default().Output(3, level.Critical, nil, fmt.Sprintf(format, v...))
 }
 
-func Errorf(format string, v ...interface{}) string {
-	return GetDefaultModule().Output(3, level.Error, nil, fmt.Sprintf(format, v...))
+func Errorf(format string, v ...interface{}) {
+	Default().Output(3, level.Error, nil, fmt.Sprintf(format, v...))
 }
 
-func Warningf(format string, v ...interface{}) string {
-	return GetDefaultModule().Output(3, level.Warning, nil, fmt.Sprintf(format, v...))
+func Warningf(format string, v ...interface{}) {
+	Default().Output(3, level.Warning, nil, fmt.Sprintf(format, v...))
 }
 
-func Noticef(format string, v ...interface{}) string {
-	return GetDefaultModule().Output(3, level.Notice, nil, fmt.Sprintf(format, v...))
+func Noticef(format string, v ...interface{}) {
+	Default().Output(3, level.Notice, nil, fmt.Sprintf(format, v...))
 }
 
-func Infof(format string, v ...interface{}) string {
-	return GetDefaultModule().Output(3, level.Info, nil, fmt.Sprintf(format, v...))
+func Infof(format string, v ...interface{}) {
+	Default().Output(3, level.Info, nil, fmt.Sprintf(format, v...))
 }
 
-func Debugf(format string, v ...interface{}) string {
-	return GetDefaultModule().Output(3, level.Debug, nil, fmt.Sprintf(format, v...))
+func Debugf(format string, v ...interface{}) {
+	Default().Output(3, level.Debug, nil, fmt.Sprintf(format, v...))
 }

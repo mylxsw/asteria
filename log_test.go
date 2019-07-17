@@ -20,16 +20,39 @@ func TestModule(t *testing.T) {
 	// asteria.DefaultWithColor(false)
 	// asteria.DefaultWithFileLine(true)
 
+	asteria.AddGlobalFilter(func(filter asteria.Filter) asteria.Filter {
+		return func(f formatter.Format) {
+			// if f.Level == level.Debug {
+			// 	return
+			// }
+
+			f.Context.UserContext["user_id"] = 123
+
+			filter(f)
+		}
+	})
+
 	asteria.GlobalContext(func(c formatter.LogContext) {
 		c.SysContext["ref"] = "190101931"
 	})
+	asteria.Default().AddFilter(func(filter asteria.Filter) asteria.Filter {
+		return func(f formatter.Format) {
+			f.Context.SysContext["ref"] = "6f96cfdfe"
+			filter(f)
+		}
+	})
 
-	asteria.GetDefaultModule().LogLevel(level.Debug)
-	asteria.Debug("xxxx")
+	asteria.Default().LogLevel(level.Debug)
+	asteria.Debug("细雨微风岸，危樯独夜舟")
+	asteria.Error("月上柳梢头，人约黄昏后")
+	asteria.WithContext(asteria.C{
+		"user_id":  123,
+		"username": "Tom",
+	}).Warningf("君子坦荡荡，小人常戚戚")
 
 	asteria.Module("order.test.scheduler").Noticef("order %s created", "1234592")
 	asteria.Module("order.scheduler.module1.module2").Infof("order %s created", "1234592")
-	asteria.Module("order.xajckakejcjakjk").Debugf("order %s created", "1234592")
+	asteria.Module("order.apple").Debugf("order %s created", "1234592")
 	asteria.Module("order").Errorf("order %s created", "1234592")
 	asteria.Module("order").Emergencyf("order %s created", "1234592")
 	asteria.Module("order").Warningf("order %s created", "1234592")
@@ -48,12 +71,35 @@ func TestModule(t *testing.T) {
 	}).Debugf("Hello, %s", "world")
 
 	taskLogger := asteria.Module("asteria.user.tasks").WithFileLine(true).GlobalContext(func(c formatter.LogContext) {
-		asteria.Default().GlobalContext(c)
+		asteria.GetDefaultConfig().GlobalContext(c)
 		c.SysContext["enterprise_id"] = 15
 	})
 	taskLogger.Debug("Hello, world")
-}
 
+	enterpriseJobLogger := asteria.Module("asteria.user.enterprise.jobs").WithFileLine(true).Formatter(formatter.NewJSONFormatter())
+
+	enterpriseJobLogger.AddFilter(func(filter asteria.Filter) asteria.Filter {
+		return func(f formatter.Format) {
+			// filter(f)
+			f.Level = level.Emergency
+			filter(f)
+		}
+	})
+
+	enterpriseJobLogger.AddFilter(func(filter asteria.Filter) asteria.Filter {
+		return func(f formatter.Format) {
+			filter(f)
+		}
+	})
+
+	enterpriseJobLogger.Debug("He remembered the count of Monte cristo")
+	enterpriseJobLogger.Info("You are mistaken💯 I am not the Count of Monte Cristo")
+	enterpriseJobLogger.Error("The noiseless door again turned on its hinges, and the Count of Monte Cristo reappeared")
+	enterpriseJobLogger.WithContext(asteria.C{
+		"user_id":  123,
+		"username": "Tom",
+	}).Warningf("君子坦荡荡，小人常戚戚")
+}
 
 func TestConcurrentWrite(t *testing.T) {
 	var logger = asteria.Module("test.concurrent")

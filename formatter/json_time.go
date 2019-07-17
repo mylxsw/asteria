@@ -16,26 +16,18 @@ func NewJSONWithTimeFormatter() *JSONWithTimeFormatter {
 	return &JSONWithTimeFormatter{}
 }
 
-
-
 // Format 日志格式化
-func (formatter JSONWithTimeFormatter) Format(colorful bool, currentTime time.Time, moduleName string, le level.Level, logContext LogContext, v ...interface{}) string {
-	datetime := currentTime.Format(time.RFC3339)
+func (formatter JSONWithTimeFormatter) Format(f Format) string {
+	datetime := f.Time.Format(time.RFC3339)
 
 	res, _ := json.Marshal(jsonOutput{
 		DateTime:   datetime,
-		Message:    fmt.Sprint(v...),
-		Level:      le,
-		ModuleName: moduleName,
-		LevelName:  level.GetLevelName(le),
-		Context:    createContext(logContext),
+		Message:    fmt.Sprint(f.Messages...),
+		Level:      f.Level,
+		ModuleName: f.Module,
+		LevelName:  level.GetLevelName(f.Level),
+		Context:    createContext(f.Context),
 	})
 
-	message := string(res)
-	// if Colorful {
-	// 	datetime = ColorTextWrap(TextLightWhite, datetime)
-	// 	message = ColorTextWrap(TextLightGrey, message)
-	// }
-
-	return fmt.Sprintf("[%s] %s", datetime, message)
+	return fmt.Sprintf("[%s] %s", datetime, string(res))
 }

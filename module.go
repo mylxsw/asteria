@@ -13,6 +13,9 @@ import (
 	"github.com/mylxsw/asteria/writer"
 )
 
+type Filter func(f formatter.Format)
+type FilterChain func(filter Filter) Filter
+
 // Logger 日志对象
 type Logger struct {
 	moduleName    string
@@ -23,8 +26,41 @@ type Logger struct {
 	colorful      func() bool
 	fileLine      func() bool
 	globalContext func() func(c formatter.LogContext)
+	filters       []FilterChain
 
 	lock sync.RWMutex
+}
+
+// AddFilter append a filter to logger
+func (module *Logger) AddFilter(f ...FilterChain) {
+	module.lock.Lock()
+	defer module.lock.Unlock()
+
+	module.filters = append(module.filters, f...)
+}
+
+// Filters return all filters
+func (module *Logger) Filters() []FilterChain {
+	module.lock.RLock()
+	defer module.lock.RUnlock()
+
+	return module.filters
+}
+
+// AddGlobalFilter add a global filter
+func AddGlobalFilter(f ...FilterChain) {
+	moduleLock.Lock()
+	defer moduleLock.Unlock()
+
+	defaultLogConfig.GlobalFilters = append(defaultLogConfig.GlobalFilters, f...)
+}
+
+// GlobalFilters return all global filters
+func GlobalFilters() []FilterChain {
+	moduleLock.RLock()
+	defer moduleLock.RUnlock()
+
+	return defaultLogConfig.GlobalFilters
 }
 
 var loggers = make(map[string]*Logger)
@@ -39,20 +75,22 @@ type DefaultConfig struct {
 	Colorful      bool
 	WithFileLine  bool
 	GlobalContext func(c formatter.LogContext)
+	GlobalFilters []FilterChain
 }
 
 // 默认配置信息
 var defaultLogConfig = DefaultConfig{
-	LogLevel:     level.Debug,
-	LogFormatter: formatter.NewDefaultFormatter(),
-	LogWriter:    writer.NewDefaultWriter(),
-	TimeLocation: time.Local,
-	Colorful:     true,
-	WithFileLine: false,
+	LogLevel:      level.Debug,
+	LogFormatter:  formatter.NewDefaultFormatter(),
+	LogWriter:     writer.NewStdoutWriter(),
+	TimeLocation:  time.Local,
+	Colorful:      true,
+	WithFileLine:  false,
+	GlobalFilters: make([]FilterChain, 0),
 }
 
-// Default return default log config
-func Default() DefaultConfig {
+// GetDefaultConfig return default log config
+func GetDefaultConfig() DefaultConfig {
 	return defaultLogConfig
 }
 
@@ -215,7 +253,11 @@ func (module *Logger) WithColor(colorful bool) *Logger {
 	return module
 }
 
-func (module *Logger) Output(callDepth int, le level.Level, userContext C, v ...interface{}) string {
+func (module *Logger) Output(callDepth int, le level.Level, userContext C, v ...interface{}) {
+	if le < module.level() {
+		return
+	}
+
 	if userContext == nil {
 		userContext = C{}
 	}
@@ -248,19 +290,33 @@ func (module *Logger) Output(callDepth int, le level.Level, userContext C, v ...
 		}
 	}
 
-	message := module.getFormatter().Format(module.colorful(), time.Now().In(module.timeLocation()), moduleName, le, logCtx, v...)
-	// 低于设定日志级别的日志不会输出
-	if le >= module.level() {
+	f := formatter.Format{
+		Colorful: module.colorful(),
+		Time:     time.Now().In(module.timeLocation()),
+		Module:   moduleName,
+		Level:    le,
+		Context:  logCtx,
+		Messages: v,
+	}
+
+	var chain Filter = func(f formatter.Format) {
+		message := module.getFormatter().Format(f)
 		if err := module.getWriter().Write(le, message); err != nil {
-			fmt.Printf("can not write to Output: %s", err)
+			fmt.Printf("can not write to output: %s", err)
 		}
 	}
 
-	return message
+	filters := append(GlobalFilters(), module.Filters()...)
+	for i := range filters {
+		ff := filters[len(filters)-i-1]
+		chain = ff(chain)
+	}
+
+	chain(f)
 }
 
-// GetDefaultModule 获取默认的模块日志
-func GetDefaultModule() *Logger {
+// Default 获取默认的模块日志
+func Default() *Logger {
 	return Module("")
 }
 
@@ -327,83 +383,83 @@ func (module *Logger) WithContext(c C) *ContextLogger {
 }
 
 // Emergency 记录emergency日志
-func (module *Logger) Emergency(v ...interface{}) string {
-	return module.Output(3, level.Emergency, nil, v...)
+func (module *Logger) Emergency(v ...interface{}) {
+	module.Output(3, level.Emergency, nil, v...)
 }
 
 // Alert 记录Alert日志
-func (module *Logger) Alert(v ...interface{}) string {
-	return module.Output(3, level.Alert, nil, v...)
+func (module *Logger) Alert(v ...interface{}) {
+	module.Output(3, level.Alert, nil, v...)
 }
 
 // Critical 记录Critical日志
-func (module *Logger) Critical(v ...interface{}) string {
-	return module.Output(3, level.Critical, nil, v...)
+func (module *Logger) Critical(v ...interface{}) {
+	module.Output(3, level.Critical, nil, v...)
 }
 
 // Error 记录Error日志
-func (module *Logger) Error(v ...interface{}) string {
-	return module.Output(3, level.Error, nil, v...)
+func (module *Logger) Error(v ...interface{}) {
+	module.Output(3, level.Error, nil, v...)
 }
 
 // Warning 记录Warning日志
-func (module *Logger) Warning(v ...interface{}) string {
-	return module.Output(3, level.Warning, nil, v...)
+func (module *Logger) Warning(v ...interface{}) {
+	module.Output(3, level.Warning, nil, v...)
 }
 
 // Notice 记录Notice日志
-func (module *Logger) Notice(v ...interface{}) string {
-	return module.Output(3, level.Notice, nil, v...)
+func (module *Logger) Notice(v ...interface{}) {
+	module.Output(3, level.Notice, nil, v...)
 }
 
 // Info 记录Info日志
-func (module *Logger) Info(v ...interface{}) string {
-	return module.Output(3, level.Info, nil, v...)
+func (module *Logger) Info(v ...interface{}) {
+	module.Output(3, level.Info, nil, v...)
 }
 
 // Debug 记录Debug日志
-func (module *Logger) Debug(v ...interface{}) string {
-	return module.Output(3, level.Debug, nil, v...)
+func (module *Logger) Debug(v ...interface{}) {
+	module.Output(3, level.Debug, nil, v...)
 }
 
 // Emergencyf 记录emergency日志
-func (module *Logger) Emergencyf(format string, v ...interface{}) string {
-	return module.Output(3, level.Emergency, nil, fmt.Sprintf(format, v...))
+func (module *Logger) Emergencyf(format string, v ...interface{}) {
+	module.Output(3, level.Emergency, nil, fmt.Sprintf(format, v...))
 }
 
 // Alertf 记录Alert日志
-func (module *Logger) Alertf(format string, v ...interface{}) string {
-	return module.Output(3, level.Alert, nil, fmt.Sprintf(format, v...))
+func (module *Logger) Alertf(format string, v ...interface{}) {
+	module.Output(3, level.Alert, nil, fmt.Sprintf(format, v...))
 }
 
 // Criticalf 记录critical日志
-func (module *Logger) Criticalf(format string, v ...interface{}) string {
-	return module.Output(3, level.Critical, nil, fmt.Sprintf(format, v...))
+func (module *Logger) Criticalf(format string, v ...interface{}) {
+	module.Output(3, level.Critical, nil, fmt.Sprintf(format, v...))
 }
 
 // Errorf 记录error日志
-func (module *Logger) Errorf(format string, v ...interface{}) string {
-	return module.Output(3, level.Error, nil, fmt.Sprintf(format, v...))
+func (module *Logger) Errorf(format string, v ...interface{}) {
+	module.Output(3, level.Error, nil, fmt.Sprintf(format, v...))
 }
 
 // Warningf 记录warning日志
-func (module *Logger) Warningf(format string, v ...interface{}) string {
-	return module.Output(3, level.Warning, nil, fmt.Sprintf(format, v...))
+func (module *Logger) Warningf(format string, v ...interface{}) {
+	module.Output(3, level.Warning, nil, fmt.Sprintf(format, v...))
 }
 
 // Noticef 记录notice日志
-func (module *Logger) Noticef(format string, v ...interface{}) string {
-	return module.Output(3, level.Notice, nil, fmt.Sprintf(format, v...))
+func (module *Logger) Noticef(format string, v ...interface{}) {
+	module.Output(3, level.Notice, nil, fmt.Sprintf(format, v...))
 }
 
 // Infof 记录info日志
-func (module *Logger) Infof(format string, v ...interface{}) string {
-	return module.Output(3, level.Info, nil, fmt.Sprintf(format, v...))
+func (module *Logger) Infof(format string, v ...interface{}) {
+	module.Output(3, level.Info, nil, fmt.Sprintf(format, v...))
 }
 
 // Debugf 记录debug日志
-func (module *Logger) Debugf(format string, v ...interface{}) string {
-	return module.Output(3, level.Debug, nil, fmt.Sprintf(format, v...))
+func (module *Logger) Debugf(format string, v ...interface{}) {
+	module.Output(3, level.Debug, nil, fmt.Sprintf(format, v...))
 }
 
 // Print 使用debug模式输出日志，为了兼容其它项目框架等

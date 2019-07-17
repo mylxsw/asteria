@@ -19,25 +19,25 @@ func NewDefaultFormatter() *DefaultFormatter {
 }
 
 // Format 日志格式化
-func (formatter DefaultFormatter) Format(colorful bool, currentTime time.Time, moduleName string, le level.Level, logContext LogContext, v ...interface{}) string {
+func (formatter DefaultFormatter) Format(f Format) string {
 	var message string
-	if colorful {
+	if f.Colorful {
 		message = fmt.Sprintf(
 			"[%s] %s %-20s %s %s",
-			currentTime.Format(time.RFC3339),
-			misc.ColorfulLevelName(le),
-			shortModuleName(moduleName),
-			strings.Trim(fmt.Sprint(v...), "\n"),
-			color.TextWrap(color.TextLightGrey, formatContext(createContext(logContext))),
+			f.Time.Format(time.RFC3339),
+			misc.ColorfulLevelName(f.Level),
+			shortModuleName(f.Module),
+			strings.Trim(fmt.Sprint(f.Messages...), "\n"),
+			color.TextWrap(color.TextLightGrey, formatContext(createContext(f.Context))),
 		)
 	} else {
 		message = fmt.Sprintf(
 			"[%s] %s %s %s %s",
-			currentTime.Format(time.RFC3339),
-			level.GetLevelName(le),
-			moduleName,
-			strings.Trim(fmt.Sprint(v...), "\n"),
-			formatContext(createContext(logContext)),
+			f.Time.Format(time.RFC3339),
+			level.GetLevelName(f.Level),
+			f.Module,
+			strings.Trim(fmt.Sprint(f.Messages...), "\n"),
+			formatContext(createContext(f.Context)),
 		)
 	}
 
