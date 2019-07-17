@@ -8,6 +8,6 @@ import (
 )
 
 func TestColorText(t *testing.T) {
-	fmt.Println(color.ColorTextWrap(color.TextLightBlue, "Hello, world"))
-	fmt.Println(color.ColorBackgroundWrap(color.TextLightCyan, color.TextLightBlue, "中文"))
+	fmt.Println(color.TextWrap(color.TextLightBlue, "Hello, world"))
+	fmt.Println(color.BackgroundWrap(color.TextLightCyan, color.TextLightBlue, "中文"))
 }

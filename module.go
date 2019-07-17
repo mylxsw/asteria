@@ -237,7 +237,7 @@ func (module *Logger) Output(callDepth int, le level.Level, userContext C, v ...
 		}
 
 		if moduleName == "" {
-			moduleName = strings.ReplaceAll(cg.PackageName, "/", ".")
+			moduleName = strings.Replace(cg.PackageName, "/", ".", -1)
 		}
 	}
 

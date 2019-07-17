@@ -28,7 +28,7 @@ func ColorfulLevelName(le level.Level) string {
 	levelName := fmt.Sprintf("[%s]", level.GetLevelNameAbbreviation(le))
 
 	if lc, ok := levelColorRef[le]; ok {
-		return color.ColorBackgroundFunc(lc[0], lc[1])(levelName)
+		return color.BackgroundFunc(lc[0], lc[1])(levelName)
 	}
 
 	return levelName

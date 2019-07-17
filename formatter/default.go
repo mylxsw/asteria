@@ -28,7 +28,7 @@ func (formatter DefaultFormatter) Format(colorful bool, currentTime time.Time, m
 			misc.ColorfulLevelName(le),
 			shortModuleName(moduleName),
 			strings.Trim(fmt.Sprint(v...), "\n"),
-			color.ColorTextWrap(color.TextLightGrey, formatContext(createContext(logContext))),
+			color.TextWrap(color.TextLightGrey, formatContext(createContext(logContext))),
 		)
 	} else {
 		message = fmt.Sprintf(

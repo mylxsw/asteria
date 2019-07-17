@@ -45,18 +45,18 @@ const (
 	TextLightWhite
 )
 
-// ColorTextWrap 文字颜色
-func ColorTextWrap(color Color, text string) string {
+// TextWrap 文字颜色
+func TextWrap(color Color, text string) string {
 	return fmt.Sprintf("\x1b[%dm%s\x1b[0m", color, text)
 }
 
-// ColorBackgroundWrap 背景颜色
-func ColorBackgroundWrap(color Color, backgroundColor Color, text string) string {
+// BackgroundWrap 背景颜色
+func BackgroundWrap(color Color, backgroundColor Color, text string) string {
 	return fmt.Sprintf("\x1b[%d;%dm%s\x1b[0m", color, backgroundColor+10, text)
 }
 
-func ColorBackgroundFunc(color Color, backgroundColor Color) func(text string) string {
+func BackgroundFunc(color Color, backgroundColor Color) func(text string) string {
 	return func(text string) string {
-		return ColorBackgroundWrap(color, backgroundColor, text)
+		return BackgroundWrap(color, backgroundColor, text)
 	}
 }
