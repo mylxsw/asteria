@@ -228,7 +228,7 @@ func (module *Logger) Output(callDepth int, le level.Level, userContext C, v ...
 	moduleName := module.moduleName
 
 	if moduleName == "" || module.fileLine() {
-		cg := misc.CallGraph(3)
+		cg := misc.CallGraph(callDepth)
 		if module.fileLine() {
 			logCtx.SysContext["file"] = cg.FileName
 			logCtx.SysContext["line"] = cg.Line
@@ -328,85 +328,85 @@ func (module *Logger) WithContext(c C) *ContextLogger {
 
 // Emergency 记录emergency日志
 func (module *Logger) Emergency(v ...interface{}) string {
-	return module.Output(2, level.Emergency, nil, v...)
+	return module.Output(3, level.Emergency, nil, v...)
 }
 
 // Alert 记录Alert日志
 func (module *Logger) Alert(v ...interface{}) string {
-	return module.Output(2, level.Alert, nil, v...)
+	return module.Output(3, level.Alert, nil, v...)
 }
 
 // Critical 记录Critical日志
 func (module *Logger) Critical(v ...interface{}) string {
-	return module.Output(2, level.Critical, nil, v...)
+	return module.Output(3, level.Critical, nil, v...)
 }
 
 // Error 记录Error日志
 func (module *Logger) Error(v ...interface{}) string {
-	return module.Output(2, level.Error, nil, v...)
+	return module.Output(3, level.Error, nil, v...)
 }
 
 // Warning 记录Warning日志
 func (module *Logger) Warning(v ...interface{}) string {
-	return module.Output(2, level.Warning, nil, v...)
+	return module.Output(3, level.Warning, nil, v...)
 }
 
 // Notice 记录Notice日志
 func (module *Logger) Notice(v ...interface{}) string {
-	return module.Output(2, level.Notice, nil, v...)
+	return module.Output(3, level.Notice, nil, v...)
 }
 
 // Info 记录Info日志
 func (module *Logger) Info(v ...interface{}) string {
-	return module.Output(2, level.Info, nil, v...)
+	return module.Output(3, level.Info, nil, v...)
 }
 
 // Debug 记录Debug日志
 func (module *Logger) Debug(v ...interface{}) string {
-	return module.Output(2, level.Debug, nil, v...)
+	return module.Output(3, level.Debug, nil, v...)
 }
 
 // Emergencyf 记录emergency日志
 func (module *Logger) Emergencyf(format string, v ...interface{}) string {
-	return module.Output(2, level.Emergency, nil, fmt.Sprintf(format, v...))
+	return module.Output(3, level.Emergency, nil, fmt.Sprintf(format, v...))
 }
 
 // Alertf 记录Alert日志
 func (module *Logger) Alertf(format string, v ...interface{}) string {
-	return module.Output(2, level.Alert, nil, fmt.Sprintf(format, v...))
+	return module.Output(3, level.Alert, nil, fmt.Sprintf(format, v...))
 }
 
 // Criticalf 记录critical日志
 func (module *Logger) Criticalf(format string, v ...interface{}) string {
-	return module.Output(2, level.Critical, nil, fmt.Sprintf(format, v...))
+	return module.Output(3, level.Critical, nil, fmt.Sprintf(format, v...))
 }
 
 // Errorf 记录error日志
 func (module *Logger) Errorf(format string, v ...interface{}) string {
-	return module.Output(2, level.Error, nil, fmt.Sprintf(format, v...))
+	return module.Output(3, level.Error, nil, fmt.Sprintf(format, v...))
 }
 
 // Warningf 记录warning日志
 func (module *Logger) Warningf(format string, v ...interface{}) string {
-	return module.Output(2, level.Warning, nil, fmt.Sprintf(format, v...))
+	return module.Output(3, level.Warning, nil, fmt.Sprintf(format, v...))
 }
 
 // Noticef 记录notice日志
 func (module *Logger) Noticef(format string, v ...interface{}) string {
-	return module.Output(2, level.Notice, nil, fmt.Sprintf(format, v...))
+	return module.Output(3, level.Notice, nil, fmt.Sprintf(format, v...))
 }
 
 // Infof 记录info日志
 func (module *Logger) Infof(format string, v ...interface{}) string {
-	return module.Output(2, level.Info, nil, fmt.Sprintf(format, v...))
+	return module.Output(3, level.Info, nil, fmt.Sprintf(format, v...))
 }
 
 // Debugf 记录debug日志
 func (module *Logger) Debugf(format string, v ...interface{}) string {
-	return module.Output(2, level.Debug, nil, fmt.Sprintf(format, v...))
+	return module.Output(3, level.Debug, nil, fmt.Sprintf(format, v...))
 }
 
 // Print 使用debug模式输出日志，为了兼容其它项目框架等
 func (module *Logger) Print(v ...interface{}) {
-	module.Output(2, level.Debug, nil, v...)
+	module.Output(3, level.Debug, nil, v...)
 }
