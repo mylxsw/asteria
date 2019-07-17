@@ -52,7 +52,6 @@ When multiple Filters are specified, multiple Filters are executed in the order 
             // }
             
             f.Context.UserContext["user_id"] = 123
-            
             // Not calling filter(f) will cancel the output of the log
             filter(f)
         }
