@@ -6,7 +6,7 @@
 [![codecov](https://codecov.io/gh/mylxsw/asteria/branch/master/graph/badge.svg)](https://codecov.io/gh/mylxsw/asteria)
 [![GoDoc](https://godoc.org/github.com/mylxsw/asteria?status.svg)](https://godoc.org/github.com/mylxsw/asteria)
 
-**Asteria** is a log library for go.
+**Asteria** is a logging library for go.
 
 The easiest way to write a log
 
@@ -53,7 +53,7 @@ When multiple Filters are specified, multiple Filters are executed in the order 
 
 			f.Context.UserContext["user_id"] = 123
             
-            // Not calling filter(f) will cancel the output of the log
+			// Not calling filter(f) will cancel the output of the log
 			filter(f)
 		}
 	})
@@ -61,7 +61,7 @@ When multiple Filters are specified, multiple Filters are executed in the order 
 #### Module Filter
 
     var logger = asteria.Module("asteria")
-    logger..AddFilter(func(filter asteria.Filter) asteria.Filter {
+    logger.AddFilter(func(filter asteria.Filter) asteria.Filter {
 		return func(f formatter.Format) {
 			// filter(f)
 			f.Level = level.Emergency
