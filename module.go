@@ -5,18 +5,24 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/mylxsw/asteria/color"
+	"github.com/mylxsw/asteria/formatter"
+	"github.com/mylxsw/asteria/level"
+	"github.com/mylxsw/asteria/misc"
+	"github.com/mylxsw/asteria/writer"
 )
 
 // Logger 日志对象
 type Logger struct {
 	moduleName    string
-	level         func() Level
-	formatter     Formatter
-	writer        Writer
+	level         func() level.Level
+	formatter     formatter.Formatter
+	writer        writer.Writer
 	timeLocation  func() *time.Location
 	colorful      func() bool
 	fileLine      func() bool
-	globalContext func() func(c LogContext)
+	globalContext func() func(c formatter.LogContext)
 
 	lock sync.RWMutex
 }
@@ -26,20 +32,20 @@ var moduleLock sync.RWMutex
 
 // DefaultConfig 默认配置对象
 type DefaultConfig struct {
-	LogLevel      Level
-	LogFormatter  Formatter
-	LogWriter     Writer
+	LogLevel      level.Level
+	LogFormatter  formatter.Formatter
+	LogWriter     writer.Writer
 	TimeLocation  *time.Location
 	Colorful      bool
 	WithFileLine  bool
-	GlobalContext func(c LogContext)
+	GlobalContext func(c formatter.LogContext)
 }
 
 // 默认配置信息
 var defaultLogConfig = DefaultConfig{
-	LogLevel:     LevelDebug,
-	LogFormatter: NewDefaultFormatter(),
-	LogWriter:    NewDefaultWriter(),
+	LogLevel:     level.Debug,
+	LogFormatter: formatter.NewDefaultFormatter(),
+	LogWriter:    writer.NewDefaultWriter(),
 	TimeLocation: time.Local,
 	Colorful:     true,
 	WithFileLine: false,
@@ -48,6 +54,11 @@ var defaultLogConfig = DefaultConfig{
 // Default return default log config
 func Default() DefaultConfig {
 	return defaultLogConfig
+}
+
+// SetLevelWithColor specify the color for level
+func SetLevelWithColor(le level.Level, textColor color.Color, backgroundColor color.Color) {
+	misc.SetLevelWithColor(le, textColor, backgroundColor)
 }
 
 // DefaultWithFileLine set whether output file & Line
@@ -75,31 +86,31 @@ func DefaultWithColor(colorful bool) {
 }
 
 // DefaultLogLevel 设置全局默认日志输出级别
-func DefaultLogLevel(level Level) {
+func DefaultLogLevel(l level.Level) {
 	moduleLock.Lock()
 	defer moduleLock.Unlock()
 
-	defaultLogConfig.LogLevel = level
+	defaultLogConfig.LogLevel = l
 }
 
 // DefaultLogFormatter 设置全局默认的日志输出格式化器
-func DefaultLogFormatter(formatter Formatter) {
+func DefaultLogFormatter(f formatter.Formatter) {
 	moduleLock.Lock()
 	defer moduleLock.Unlock()
 
-	defaultLogConfig.LogFormatter = formatter
+	defaultLogConfig.LogFormatter = f
 }
 
 // DefaultLogWriter 设置全局默认的日志输出器
-func DefaultLogWriter(writer Writer) {
+func DefaultLogWriter(w writer.Writer) {
 	moduleLock.Lock()
 	defer moduleLock.Unlock()
 
-	defaultLogConfig.LogWriter = writer
+	defaultLogConfig.LogWriter = w
 }
 
 // GlobalContext set a global context
-func GlobalContext(f func(c LogContext)) {
+func GlobalContext(f func(c formatter.LogContext)) {
 	moduleLock.Lock()
 	defer moduleLock.Unlock()
 
@@ -119,7 +130,7 @@ func Module(moduleName string) *Logger {
 		moduleName: moduleName,
 		formatter:  defaultLogConfig.LogFormatter,
 		writer:     defaultLogConfig.LogWriter,
-		level: func() Level {
+		level: func() level.Level {
 			moduleLock.RLock()
 			defer moduleLock.RUnlock()
 
@@ -143,7 +154,7 @@ func Module(moduleName string) *Logger {
 
 			return defaultLogConfig.WithFileLine
 		},
-		globalContext: func() func(c LogContext) {
+		globalContext: func() func(c formatter.LogContext) {
 			moduleLock.RLock()
 			defer moduleLock.RUnlock()
 
@@ -181,11 +192,11 @@ func (module *Logger) WithFileLine(enable bool) *Logger {
 }
 
 // GlobalContext set a global context
-func (module *Logger) GlobalContext(f func(c LogContext)) *Logger {
+func (module *Logger) GlobalContext(f func(c formatter.LogContext)) *Logger {
 	module.lock.Lock()
 	defer module.lock.Unlock()
 
-	module.globalContext = func() func(c LogContext) {
+	module.globalContext = func() func(c formatter.LogContext) {
 		return f
 	}
 
@@ -204,12 +215,12 @@ func (module *Logger) WithColor(colorful bool) *Logger {
 	return module
 }
 
-func (module *Logger) Output(callDepth int, level Level, userContext C, v ...interface{}) string {
+func (module *Logger) Output(callDepth int, le level.Level, userContext C, v ...interface{}) string {
 	if userContext == nil {
 		userContext = C{}
 	}
 
-	logCtx := LogContext{
+	logCtx := formatter.LogContext{
 		UserContext: userContext,
 		SysContext:  C{},
 	}
@@ -217,7 +228,7 @@ func (module *Logger) Output(callDepth int, level Level, userContext C, v ...int
 	moduleName := module.moduleName
 
 	if moduleName == "" || module.fileLine() {
-		cg := CallGraph(3)
+		cg := misc.CallGraph(3)
 		if module.fileLine() {
 			logCtx.SysContext["file"] = cg.FileName
 			logCtx.SysContext["line"] = cg.Line
@@ -237,10 +248,10 @@ func (module *Logger) Output(callDepth int, level Level, userContext C, v ...int
 		}
 	}
 
-	message := module.getFormatter().Format(module.colorful(), time.Now().In(module.timeLocation()), moduleName, level, logCtx, v...)
+	message := module.getFormatter().Format(module.colorful(), time.Now().In(module.timeLocation()), moduleName, le, logCtx, v...)
 	// 低于设定日志级别的日志不会输出
-	if level >= module.level() {
-		if err := module.getWriter().Write(level, message); err != nil {
+	if le >= module.level() {
+		if err := module.getWriter().Write(le, message); err != nil {
 			fmt.Printf("can not write to Output: %s", err)
 		}
 	}
@@ -254,27 +265,27 @@ func GetDefaultModule() *Logger {
 }
 
 // LogLevel 设置日志输出级别
-func (module *Logger) LogLevel(level Level) *Logger {
+func (module *Logger) LogLevel(le level.Level) *Logger {
 	module.lock.Lock()
 	defer module.lock.Unlock()
 
-	module.level = func() Level {
-		return level
+	module.level = func() level.Level {
+		return le
 	}
 
 	return module
 }
 
 // Formatter 设置日志格式化器
-func (module *Logger) Formatter(formatter Formatter) *Logger {
+func (module *Logger) Formatter(f formatter.Formatter) *Logger {
 	module.lock.Lock()
 	defer module.lock.Unlock()
 
-	module.formatter = formatter
+	module.formatter = f
 	return module
 }
 
-func (module *Logger) getFormatter() Formatter {
+func (module *Logger) getFormatter() formatter.Formatter {
 	module.lock.RLock()
 	defer module.lock.RUnlock()
 
@@ -282,15 +293,15 @@ func (module *Logger) getFormatter() Formatter {
 }
 
 // Writer 设置日志输出器
-func (module *Logger) Writer(writer Writer) *Logger {
+func (module *Logger) Writer(w writer.Writer) *Logger {
 	module.lock.Lock()
 	defer module.lock.Unlock()
 
-	module.writer = writer
+	module.writer = w
 	return module
 }
 
-func (module *Logger) getWriter() Writer {
+func (module *Logger) getWriter() writer.Writer {
 	module.lock.RLock()
 	defer module.lock.RUnlock()
 
@@ -308,94 +319,94 @@ func (module *Logger) Close() error {
 }
 
 // WithContext 带有上下文信息的日志输出
-func (module *Logger) WithContext(context C) *ContextLogger {
+func (module *Logger) WithContext(c C) *ContextLogger {
 	return &ContextLogger{
 		logger:  module,
-		context: context,
+		context: c,
 	}
 }
 
 // Emergency 记录emergency日志
 func (module *Logger) Emergency(v ...interface{}) string {
-	return module.Output(2, LevelEmergency, nil, v...)
+	return module.Output(2, level.Emergency, nil, v...)
 }
 
 // Alert 记录Alert日志
 func (module *Logger) Alert(v ...interface{}) string {
-	return module.Output(2, LevelAlert, nil, v...)
+	return module.Output(2, level.Alert, nil, v...)
 }
 
 // Critical 记录Critical日志
 func (module *Logger) Critical(v ...interface{}) string {
-	return module.Output(2, LevelCritical, nil, v...)
+	return module.Output(2, level.Critical, nil, v...)
 }
 
 // Error 记录Error日志
 func (module *Logger) Error(v ...interface{}) string {
-	return module.Output(2, LevelError, nil, v...)
+	return module.Output(2, level.Error, nil, v...)
 }
 
 // Warning 记录Warning日志
 func (module *Logger) Warning(v ...interface{}) string {
-	return module.Output(2, LevelWarning, nil, v...)
+	return module.Output(2, level.Warning, nil, v...)
 }
 
 // Notice 记录Notice日志
 func (module *Logger) Notice(v ...interface{}) string {
-	return module.Output(2, LevelNotice, nil, v...)
+	return module.Output(2, level.Notice, nil, v...)
 }
 
 // Info 记录Info日志
 func (module *Logger) Info(v ...interface{}) string {
-	return module.Output(2, LevelInfo, nil, v...)
+	return module.Output(2, level.Info, nil, v...)
 }
 
 // Debug 记录Debug日志
 func (module *Logger) Debug(v ...interface{}) string {
-	return module.Output(2, LevelDebug, nil, v...)
+	return module.Output(2, level.Debug, nil, v...)
 }
 
 // Emergencyf 记录emergency日志
 func (module *Logger) Emergencyf(format string, v ...interface{}) string {
-	return module.Output(2, LevelEmergency, nil, fmt.Sprintf(format, v...))
+	return module.Output(2, level.Emergency, nil, fmt.Sprintf(format, v...))
 }
 
 // Alertf 记录Alert日志
 func (module *Logger) Alertf(format string, v ...interface{}) string {
-	return module.Output(2, LevelAlert, nil, fmt.Sprintf(format, v...))
+	return module.Output(2, level.Alert, nil, fmt.Sprintf(format, v...))
 }
 
 // Criticalf 记录critical日志
 func (module *Logger) Criticalf(format string, v ...interface{}) string {
-	return module.Output(2, LevelCritical, nil, fmt.Sprintf(format, v...))
+	return module.Output(2, level.Critical, nil, fmt.Sprintf(format, v...))
 }
 
 // Errorf 记录error日志
 func (module *Logger) Errorf(format string, v ...interface{}) string {
-	return module.Output(2, LevelError, nil, fmt.Sprintf(format, v...))
+	return module.Output(2, level.Error, nil, fmt.Sprintf(format, v...))
 }
 
 // Warningf 记录warning日志
 func (module *Logger) Warningf(format string, v ...interface{}) string {
-	return module.Output(2, LevelWarning, nil, fmt.Sprintf(format, v...))
+	return module.Output(2, level.Warning, nil, fmt.Sprintf(format, v...))
 }
 
 // Noticef 记录notice日志
 func (module *Logger) Noticef(format string, v ...interface{}) string {
-	return module.Output(2, LevelNotice, nil, fmt.Sprintf(format, v...))
+	return module.Output(2, level.Notice, nil, fmt.Sprintf(format, v...))
 }
 
 // Infof 记录info日志
 func (module *Logger) Infof(format string, v ...interface{}) string {
-	return module.Output(2, LevelInfo, nil, fmt.Sprintf(format, v...))
+	return module.Output(2, level.Info, nil, fmt.Sprintf(format, v...))
 }
 
 // Debugf 记录debug日志
 func (module *Logger) Debugf(format string, v ...interface{}) string {
-	return module.Output(2, LevelDebug, nil, fmt.Sprintf(format, v...))
+	return module.Output(2, level.Debug, nil, fmt.Sprintf(format, v...))
 }
 
 // Print 使用debug模式输出日志，为了兼容其它项目框架等
 func (module *Logger) Print(v ...interface{}) {
-	module.Output(2, LevelDebug, nil, v...)
+	module.Output(2, level.Debug, nil, v...)
 }

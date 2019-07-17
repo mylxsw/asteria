@@ -1,4 +1,4 @@
-package asteria
+package misc
 
 import (
 	"runtime"

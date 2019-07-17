@@ -1,0 +1,56 @@
+package formatter
+
+import (
+	"encoding/json"
+	"strings"
+	"time"
+
+	"github.com/mylxsw/asteria/level"
+)
+
+type LogContext struct {
+	UserContext map[string]interface{}
+	SysContext  map[string]interface{}
+}
+
+// Formatter 日志格式化接口
+type Formatter interface {
+	// Format 日志格式化
+	Format(colorful bool, currentTime time.Time, moduleName string, le level.Level, context LogContext, v ...interface{}) string
+}
+
+func formatContext(context map[string]interface{}) string {
+	if context == nil {
+		context = make(map[string]interface{})
+	}
+
+	contextJSON, _ := json.Marshal(context)
+	return string(contextJSON)
+}
+
+func shortModuleName(moduleName string) string {
+	segs := strings.Split(moduleName, ".")
+	if len(segs) > 1 {
+		ss := make([]string, 0)
+		for _, s := range segs[:len(segs)-1] {
+			if len(s) == 0 {
+				continue
+			}
+
+			ss = append(ss, s[:1])
+		}
+
+		moduleName = strings.Join(append(ss, segs[len(segs)-1]), ".")
+	} else {
+		moduleName = strings.Join(segs, ".")
+	}
+	return moduleName
+}
+
+func createContext(logContext LogContext) map[string]interface{} {
+	cc := logContext.UserContext
+	for k, v := range logContext.SysContext {
+		cc["#"+k] = v
+	}
+	return cc
+}

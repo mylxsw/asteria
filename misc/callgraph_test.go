@@ -1,14 +1,14 @@
-package asteria_test
+package misc_test
 
 import (
 	"testing"
 
-	"github.com/mylxsw/asteria"
+	"github.com/mylxsw/asteria/misc"
 )
 
 func TestCallGraph(t *testing.T) {
-	cg := asteria.CallGraph(1)
-	if cg.PackageName != "github.com/mylxsw/asteria_test" {
+	cg := misc.CallGraph(1)
+	if cg.PackageName != "github.com/mylxsw/asteria/misc_test" {
 		t.Error("test failed")
 	}
 
