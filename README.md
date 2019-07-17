@@ -32,9 +32,9 @@ Log according to different modules
 
 ## Output the file line number of the caller
 
-    # default display file line number 
+    // default display file line number 
     asteria.DefaultWithFileLine(true)
-    # display file line number for individual modules
+    // display file line number for individual modules
     asteria.Module("asteria").WithFileLine(true)
 
 ### Filter
@@ -46,35 +46,35 @@ When multiple Filters are specified, multiple Filters are executed in the order 
 #### Global Filter
 
     asteria.AddGlobalFilter(func(filter asteria.Filter) asteria.Filter {
-		return func(f formatter.Format) {
-			// if f.Level == level.Debug {
-			// 	return
-			// }
+        return func(f formatter.Format) {
+            // if f.Level == level.Debug {
+            // 	return
+            // }
 
-			f.Context.UserContext["user_id"] = 123
-            
-			// Not calling filter(f) will cancel the output of the log
-			filter(f)
-		}
-	})
+            f.Context.UserContext["user_id"] = 123
+
+            // Not calling filter(f) will cancel the output of the log
+            filter(f)
+        }
+    })
 
 #### Module Filter
 
     var logger = asteria.Module("asteria")
     logger.AddFilter(func(filter asteria.Filter) asteria.Filter {
-		return func(f formatter.Format) {
-			// filter(f)
-			f.Level = level.Emergency
-			filter(f)
-		}
-	})
+        return func(f formatter.Format) {
+            // filter(f)
+            f.Level = level.Emergency
+            filter(f)
+        }
+    })
 
 ### Log Formatter
 
 Asteria supports custom log formats, just implement the `formatter.Formatter` interface.
     
     type Formatter interface {
-    	Format(f Format) string
+        Format(f Format) string
     }
 
 Three types of log formatting methods are provided by default
