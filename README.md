@@ -28,6 +28,10 @@ Log according to different modules
         "username": "Tom",
     }).Warningf("君子坦荡荡，小人常戚戚")
     
+## Install
+
+    go get -u github.com/mylxsw/asteria/log
+
 ## Customize
 
 ## Output the file line number of the caller
