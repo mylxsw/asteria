@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/mylxsw/asteria/level"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetLevelByName(t *testing.T) {
@@ -16,11 +17,8 @@ func TestGetLevelByName(t *testing.T) {
 	}
 
 	for key, val := range testData {
-		if level.GetLevelByName(key) != val {
-			t.Errorf("Test Failed: GetLevelByName(%s) != %d", key, val)
-		}
+		assert.Equal(t, val, level.GetLevelByName(key))
 	}
-
 }
 
 func TestGetLevelName(t *testing.T) {
@@ -31,8 +29,23 @@ func TestGetLevelName(t *testing.T) {
 	}
 
 	for key, val := range testData {
-		if level.GetLevelName(key) != val {
-			t.Errorf("Test Failed: GetLevelName(%d) != %s", key, val)
-		}
+		assert.Equal(t, val, level.GetLevelName(key))
+	}
+}
+
+func TestGetLevelNameAbbreviation(t *testing.T) {
+	var testData = map[level.Level]string{
+		level.Emergency: "EMCY",
+		level.Alert:     "ALER",
+		level.Critical:  "CRIT",
+		level.Error:     "EROR",
+		level.Warning:   "WARN",
+		level.Notice:    "NOTI",
+		level.Info:      "INFO",
+		level.Debug:     "DEBG",
+	}
+
+	for l, exp := range testData {
+		assert.Equal(t, exp, level.GetLevelNameAbbreviation(l))
 	}
 }

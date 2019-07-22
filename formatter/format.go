@@ -58,6 +58,10 @@ func shortModuleName(moduleName string) string {
 
 func createContext(logContext LogContext) map[string]interface{} {
 	cc := logContext.UserContext
+	if cc == nil {
+		cc = make(map[string]interface{}, 0)
+	}
+
 	for k, v := range logContext.SysContext {
 		cc["#"+k] = v
 	}
