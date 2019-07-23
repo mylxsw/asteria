@@ -1,8 +1,8 @@
 package misc_test
 
 import (
-	"fmt"
 	"regexp"
+	"sync"
 	"testing"
 
 	"github.com/mylxsw/asteria/misc"
@@ -12,9 +12,24 @@ import (
 func TestCallGraph(t *testing.T) {
 	cg := misc.CallGraph(1)
 
-	fmt.Println(cg)
-
 	assert.Equal(t, "github.com/mylxsw/asteria/misc_test", cg.PackageName)
-	assert.Equal(t, "TestCallGraph", cg.FuncName)
 	assert.Regexp(t, regexp.MustCompile("misc/callgraph_test\\.go$"), cg.FileName)
+
+
+	func() {
+
+		var wg sync.WaitGroup
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
+			cg := misc.CallGraph(1)
+
+			assert.Equal(t, "github.com/mylxsw/asteria/misc_test", cg.PackageName)
+			assert.Regexp(t, regexp.MustCompile("misc/callgraph_test\\.go$"), cg.FileName)
+		}()
+
+		wg.Wait()
+	}()
+
 }

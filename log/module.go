@@ -241,7 +241,6 @@ func (module *Logger) Output(callDepth int, le level.Level, userContext Fields, 
 			logCtx.GlobalFields["file"] = cg.FileName
 			logCtx.GlobalFields["line"] = cg.Line
 			logCtx.GlobalFields["package"] = cg.PackageName
-			logCtx.GlobalFields["func"] = cg.FuncName
 		}
 
 		if moduleName == "" {
