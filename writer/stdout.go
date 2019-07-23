@@ -31,5 +31,3 @@ func (writer StdoutWriter) Close() error {
 	// do nothing
 	return nil
 }
-
-

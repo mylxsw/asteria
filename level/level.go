@@ -8,19 +8,18 @@ type Level int
 
 // 日志输出级别
 const (
-	Emergency Level = 600
-	Alert           = 550
-	Critical        = 500
-	Error           = 400
-	Warning         = 300
-	Notice          = 250
-	Info            = 200
-	Debug           = 100
+	Emergency Level = iota
+	Alert
+	Critical
+	Error
+	Warning
+	Notice
+	Info
+	Debug
 )
 
-// GetLevelNameAbbreviation 获取日志级别缩写
-func GetLevelNameAbbreviation(level Level) string {
-	switch level {
+func (le Level) GetLevelNameAbbreviation() string {
+	switch le {
 	case Emergency:
 		return "EMCY"
 	case Alert:
@@ -42,9 +41,8 @@ func GetLevelNameAbbreviation(level Level) string {
 	return "UNON"
 }
 
-// GetLevelName 获取日志级别名称
-func GetLevelName(level Level) string {
-	switch level {
+func (le Level) GetLevelName() string {
+	switch le {
 	case Emergency:
 		return "EMERGENCY"
 	case Alert:

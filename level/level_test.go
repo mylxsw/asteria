@@ -29,7 +29,7 @@ func TestGetLevelName(t *testing.T) {
 	}
 
 	for key, val := range testData {
-		assert.Equal(t, val, level.GetLevelName(key))
+		assert.Equal(t, val, key.GetLevelName())
 	}
 }
 
@@ -46,6 +46,6 @@ func TestGetLevelNameAbbreviation(t *testing.T) {
 	}
 
 	for l, exp := range testData {
-		assert.Equal(t, exp, level.GetLevelNameAbbreviation(l))
+		assert.Equal(t, exp, l.GetLevelNameAbbreviation())
 	}
 }

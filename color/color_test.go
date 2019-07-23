@@ -8,15 +8,15 @@ import (
 )
 
 func TestTextWrap(t *testing.T) {
-	assert.Equal(t, color.TextWrap(color.TextGreen, "Hello"), "\x1b[32mHello\x1b[0m", "color not match")
-	assert.Equal(t, color.TextWrap(color.TextRed, "Hello"), "\x1b[31mHello\x1b[0m", "color not match")
-	assert.Equal(t, color.TextWrap(color.TextLightBlue, "Hello"), "\x1b[94mHello\x1b[0m", "color not match")
+	assert.Equal(t, color.TextWrap(color.Green, "Hello"), "\x1b[32mHello\x1b[0m", "color not match")
+	assert.Equal(t, color.TextWrap(color.Red, "Hello"), "\x1b[31mHello\x1b[0m", "color not match")
+	assert.Equal(t, color.TextWrap(color.LightBlue, "Hello"), "\x1b[94mHello\x1b[0m", "color not match")
 }
 
 func TestBackgroundWrap(t *testing.T) {
-	assert.Equal(t, color.BackgroundWrap(color.TextLightBlue, color.TextWhite, "Hello"), "\x1b[94;47mHello\x1b[0m")
+	assert.Equal(t, color.BackgroundWrap(color.LightBlue, color.White, "Hello"), "\x1b[94;47mHello\x1b[0m")
 }
 
 func TestBackgroundFunc(t *testing.T) {
-	assert.Equal(t, color.BackgroundFunc(color.TextLightBlue, color.TextWhite)("Hello"), "\x1b[94;47mHello\x1b[0m")
+	assert.Equal(t, color.BackgroundFunc(color.LightBlue, color.White)("Hello"), "\x1b[94;47mHello\x1b[0m")
 }

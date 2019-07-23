@@ -9,14 +9,14 @@ import (
 )
 
 var levelColorRef = map[level.Level][]color.Color{
-	level.Debug:     {color.TextLightWhite, color.TextBlue},
-	level.Info:      {color.TextLightWhite, color.TextCyan},
-	level.Notice:    {color.TextLightWhite, color.TextYellow},
-	level.Warning:   {color.TextRed, color.TextYellow},
-	level.Error:     {color.TextLightWhite, color.TextRed},
-	level.Critical:  {color.TextLightWhite, color.TextLightRed},
-	level.Alert:     {color.TextLightWhite, color.TextLightRed},
-	level.Emergency: {color.TextLightWhite, color.TextLightRed},
+	level.Debug:     {color.LightWhite, color.Blue},
+	level.Info:      {color.LightWhite, color.Cyan},
+	level.Notice:    {color.LightWhite, color.Yellow},
+	level.Warning:   {color.Red, color.Yellow},
+	level.Error:     {color.LightWhite, color.Red},
+	level.Critical:  {color.LightWhite, color.LightRed},
+	level.Alert:     {color.LightWhite, color.LightRed},
+	level.Emergency: {color.LightWhite, color.LightRed},
 }
 
 var levelColorRefLock sync.RWMutex
@@ -25,7 +25,7 @@ func ColorfulLevelName(le level.Level) string {
 	levelColorRefLock.RLock()
 	defer levelColorRefLock.RUnlock()
 
-	levelName := fmt.Sprintf("[%s]", level.GetLevelNameAbbreviation(le))
+	levelName := fmt.Sprintf("[%s]", le.GetLevelNameAbbreviation())
 
 	if lc, ok := levelColorRef[le]; ok {
 		return color.BackgroundFunc(lc[0], lc[1])(levelName)

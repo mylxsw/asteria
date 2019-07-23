@@ -8,41 +8,25 @@ import (
 type Color int
 
 const (
-	// TextBlack 黑色
-	TextBlack Color = iota + 30
-	// TextRed 红色
-	TextRed
-	// TextGreen 绿色
-	TextGreen
-	// TextYellow 黄色
-	TextYellow
-	// TextBlue 蓝色
-	TextBlue
-	// TextMagenta 洋红
-	TextMagenta
-	// TextCyan 青色
-	TextCyan
-	// TextWhite 白色
-	TextWhite
+	Black Color = iota + 30
+	Red
+	Green
+	Yellow
+	Blue
+	Magenta
+	Cyan
+	White
 )
 
 const (
-	// TextLightGrey 亮灰色
-	TextLightGrey Color = iota + 90
-	// TextLightRed 亮红色
-	TextLightRed
-	// TextLightGreen 亮绿色
-	TextLightGreen
-	// TextLightYellow 亮黄色
-	TextLightYellow
-	// TextLightBlue 亮蓝色
-	TextLightBlue
-	// TextLightMagenta 亮洋红
-	TextLightMagenta
-	// TextLightCyan 亮青色
-	TextLightCyan
-	// TextLightWhite 亮白色
-	TextLightWhite
+	LightGrey Color = iota + 90
+	LightRed
+	LightGreen
+	LightYellow
+	LightBlue
+	LightMagenta
+	LightCyan
+	LightWhite
 )
 
 // TextWrap 文字颜色

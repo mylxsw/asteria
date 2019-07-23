@@ -11,7 +11,7 @@ Package asteria is a logging library for go with module support.
 
 	func main() {
 		logger.Debugf("xxxx: %s, xxx", "ooo")
-		logger.WithContext(log.C{
+		logger.WithFields(log.C{
 			"id": 123,
 			"name": "lixiaoyao",
 		}).Debugf("Hello, %s", "world")

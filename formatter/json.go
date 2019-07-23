@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/mylxsw/asteria/event"
 	"github.com/mylxsw/asteria/level"
 )
 
@@ -25,8 +26,8 @@ func NewJSONFormatter() *JSONFormatter {
 	return &JSONFormatter{}
 }
 
-// Format 日志格式化
-func (formatter JSONFormatter) Format(f Format) string {
+// Event 日志格式化
+func (formatter JSONFormatter) Format(f event.Event) string {
 	datetime := f.Time.Format(time.RFC3339)
 
 	res, _ := json.Marshal(jsonOutput{
@@ -34,8 +35,8 @@ func (formatter JSONFormatter) Format(f Format) string {
 		Message:    fmt.Sprint(f.Messages...),
 		Level:      f.Level,
 		ModuleName: f.Module,
-		LevelName:  level.GetLevelName(f.Level),
-		Context:    createContext(f.Context),
+		LevelName:  f.Level.GetLevelName(),
+		Context:    f.Fields.ToMap(),
 	})
 
 	return string(res)

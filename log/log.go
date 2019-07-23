@@ -8,7 +8,7 @@ import (
 	"github.com/mylxsw/asteria/writer"
 )
 
-type C map[string]interface{}
+type Fields map[string]interface{}
 
 // ReOpenAll reopen all logger
 func ReOpenAll() map[string]error {
@@ -55,8 +55,8 @@ func SetWriter(w writer.Writer) *Logger {
 	return Default().Writer(w)
 }
 
-func WithContext(context C) *ContextLogger {
-	return Default().WithContext(context)
+func WithFields(fields Fields) *ContextLogger {
+	return Default().WithFields(fields)
 }
 
 func Emergency(v ...interface{}) {

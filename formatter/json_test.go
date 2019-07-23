@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mylxsw/asteria/event"
 	"github.com/mylxsw/asteria/formatter"
 	"github.com/mylxsw/asteria/level"
 	"github.com/stretchr/testify/assert"
@@ -14,14 +15,13 @@ func TestJSONFormatter_Format(t *testing.T) {
 	now := time.Now()
 	f := formatter.NewJSONFormatter()
 
-	fm := formatter.Format{
-		Colorful: false,
-		Time:     now,
-		Module:   "test",
-		Level:    level.Alert,
-		Context: formatter.LogContext{
-			SysContext:  map[string]interface{}{"abc": "def",},
-			UserContext: map[string]interface{}{"uid": 134,},
+	fm := event.Event{
+		Time:   now,
+		Module: "test",
+		Level:  level.Alert,
+		Fields: event.Fields{
+			GlobalFields: map[string]interface{}{"abc": "def",},
+			CustomFields: map[string]interface{}{"uid": 134,},
 		},
 		Messages: []interface{}{"Hello, world"},
 	}

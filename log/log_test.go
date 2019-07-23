@@ -1,43 +1,59 @@
 package log_test
 
 import (
-	"math/rand"
-	"os"
+	"regexp"
 	"testing"
-	"time"
 
+	"github.com/mylxsw/asteria/event"
 	"github.com/mylxsw/asteria/formatter"
 	"github.com/mylxsw/asteria/level"
 	"github.com/mylxsw/asteria/log"
-	"github.com/mylxsw/asteria/writer"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestModule(t *testing.T) {
-	// DefaultLogLevel(Critical)
+type MockWriter struct {
+	LastLevel   level.Level
+	LastMessage string
+}
 
-	// loc, _ := time.LoadLocation("Asia/Chongqing")
-	// log.DefaultLocation(loc)
-	// log.DefaultWithColor(false)
-	// log.DefaultWithFileLine(true)
+func (w *MockWriter) Write(le level.Level, message string) error {
+	w.LastLevel = le
+	w.LastMessage = message
 
+	return nil
+}
+
+func (w *MockWriter) ReOpen() error {
+	panic("implement me")
+}
+
+func (w *MockWriter) Close() error {
+	panic("implement me")
+}
+
+func TestGlobalFilters(t *testing.T) {
+	mockWriter := &MockWriter{}
+
+	log.DefaultLogWriter(mockWriter)
 	log.AddGlobalFilter(func(filter log.Filter) log.Filter {
-		return func(f formatter.Format) {
-			// if f.Level == level.Debug {
-			// 	return
-			// }
-
-			f.Context.UserContext["user_id"] = 123
-
+		return func(f event.Event) {
+			f.Fields.CustomFields["user_id"] = 123
 			filter(f)
 		}
 	})
 
-	log.GlobalContext(func(c formatter.LogContext) {
-		c.SysContext["ref"] = "190101931"
+	log.Debug("Hello")
+	assert.Equal(t, level.Debug, mockWriter.LastLevel)
+	assert.Regexp(t, regexp.MustCompile("^\\[.*?\\] .*?[DEBUG].*?Hello.*?\"user_id\":123"), mockWriter.LastMessage)
+}
+
+func TestModule(t *testing.T) {
+	log.GlobalFields(func(c event.Fields) {
+		c.GlobalFields["ref"] = "190101931"
 	})
 	log.Default().AddFilter(func(filter log.Filter) log.Filter {
-		return func(f formatter.Format) {
-			f.Context.SysContext["ref"] = "6f96cfdfe"
+		return func(f event.Event) {
+			f.Fields.GlobalFields["ref"] = "6f96cfdfe"
 			filter(f)
 		}
 	})
@@ -45,7 +61,7 @@ func TestModule(t *testing.T) {
 	log.Default().LogLevel(level.Debug)
 	log.Debug("细雨微风岸，危樯独夜舟")
 	log.Error("月上柳梢头，人约黄昏后")
-	log.WithContext(log.C{
+	log.WithFields(log.Fields{
 		"user_id":  123,
 		"username": "Tom",
 	}).Warningf("君子坦荡荡，小人常戚戚")
@@ -61,25 +77,25 @@ func TestModule(t *testing.T) {
 
 	log.Module("user").Formatter(formatter.NewJSONWithTimeFormatter()).Error("user create failed")
 
-	log.WithContext(nil).Debug("error occur")
-	log.Module("purchase").Formatter(formatter.NewJSONWithTimeFormatter()).WithContext(nil).Infof("用户 %s 已创建", "mylxsw")
+	log.WithFields(nil).Debug("error occur")
+	log.Module("purchase").Formatter(formatter.NewJSONWithTimeFormatter()).WithFields(nil).Infof("用户 %s 已创建", "mylxsw")
 
 	userLog := log.Module("user")
-	userLog.WithContext(log.C{
+	userLog.WithFields(log.Fields{
 		"id":   123,
 		"name": "lixiaoyao",
 	}).Debugf("Hello, %s", "world")
 
-	taskLogger := log.Module("log.user.tasks").WithFileLine(true).GlobalContext(func(c formatter.LogContext) {
-		log.GetDefaultConfig().GlobalContext(c)
-		c.SysContext["enterprise_id"] = 15
+	taskLogger := log.Module("log.user.tasks").WithFileLine(true).GlobalFields(func(c event.Fields) {
+		log.GetDefaultConfig().GlobalFields(c)
+		c.GlobalFields["enterprise_id"] = 15
 	})
 	taskLogger.Debug("Hello, world")
 
 	enterpriseJobLogger := log.Module("log.user.enterprise.jobs").WithFileLine(true).Formatter(formatter.NewJSONFormatter())
 
 	enterpriseJobLogger.AddFilter(func(filter log.Filter) log.Filter {
-		return func(f formatter.Format) {
+		return func(f event.Event) {
 			// filter(f)
 			f.Level = level.Emergency
 			filter(f)
@@ -87,7 +103,7 @@ func TestModule(t *testing.T) {
 	})
 
 	enterpriseJobLogger.AddFilter(func(filter log.Filter) log.Filter {
-		return func(f formatter.Format) {
+		return func(f event.Event) {
 			filter(f)
 		}
 	})
@@ -95,30 +111,8 @@ func TestModule(t *testing.T) {
 	enterpriseJobLogger.Debug("He remembered the count of Monte cristo")
 	enterpriseJobLogger.Info("You are mistaken💯 I am not the Count of Monte Cristo")
 	enterpriseJobLogger.Error("The noiseless door again turned on its hinges, and the Count of Monte Cristo reappeared")
-	enterpriseJobLogger.WithContext(log.C{
+	enterpriseJobLogger.WithFields(log.Fields{
 		"user_id":  123,
 		"username": "Tom",
 	}).Warningf("君子坦荡荡，小人常戚戚")
-}
-
-func TestConcurrentWrite(t *testing.T) {
-	var logger = log.Module("test.concurrent")
-
-	var logfile = "./test.log"
-
-	logger.Writer(writer.NewSingleFileWriter(logfile))
-
-	rand.Seed(time.Now().Unix())
-	for i := 0; i < 1000; i++ {
-		go func(i int) {
-			time.Sleep(time.Duration(rand.Intn(1000)) * time.Millisecond)
-			logger.Debugf("inner - %d（%d）", i, rand.Intn(10))
-		}(i)
-	}
-
-	for i := 0; i < 1000; i++ {
-		logger.Debugf("outer - %d", i)
-	}
-
-	os.Remove(logfile)
 }
