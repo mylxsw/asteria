@@ -7,6 +7,7 @@ go:
 
 env:
   - GO111MODULE=on
+  - COVERALLS_TOKEN=7x2c0Eo565r4PQfUIkms12XZRYTXyaCTm
 
 matrix:
   fast_finish: true
@@ -18,8 +19,4 @@ install:
 script:
   - go vet -x ./...
   - go test -v -race ./...
-  - go test -race -coverprofile=coverage.txt -covermode=atomic
-  - $HOME/gopath/bin/goveralls -coverprofile=coverage.txt -service=travis-ci -repotoken $COVERALLS_TOKEN
-
-after_success:
-  - bash <(curl -s https://codecov.io/bash)
+  - ./coveralls.bash
