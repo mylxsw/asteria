@@ -77,13 +77,23 @@ type DefaultConfig struct {
 }
 
 // 默认配置信息
-var defaultLogConfig = DefaultConfig{
-	LogLevel:      level.Debug,
-	LogFormatter:  formatter.NewDefaultFormatter(true),
-	LogWriter:     writer.NewStdoutWriter(),
-	TimeLocation:  time.Local,
-	WithFileLine:  false,
-	GlobalFilters: make([]FilterChain, 0),
+var defaultLogConfig DefaultConfig
+
+// Reset all configuration for logger
+func Reset() {
+	moduleLock.Lock()
+	defer moduleLock.Unlock()
+
+	defaultLogConfig = DefaultConfig{
+		LogLevel:      level.Debug,
+		LogFormatter:  formatter.NewDefaultFormatter(true),
+		LogWriter:     writer.NewStdoutWriter(),
+		TimeLocation:  time.Local,
+		WithFileLine:  false,
+		GlobalFilters: make([]FilterChain, 0),
+	}
+
+	loggers = make(map[string]*Logger)
 }
 
 // GetDefaultConfig return default log config
@@ -220,7 +230,7 @@ func (module *Logger) GlobalFields(f func(c event.Fields)) *Logger {
 }
 
 func (module *Logger) Output(callDepth int, le level.Level, userContext Fields, v ...interface{}) {
-	if le < module.level() {
+	if le > module.level() {
 		return
 	}
 

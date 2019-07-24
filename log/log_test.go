@@ -1,6 +1,7 @@
 package log_test
 
 import (
+	"fmt"
 	"regexp"
 	"testing"
 
@@ -14,6 +15,8 @@ import (
 type MockWriter struct {
 	LastLevel   level.Level
 	LastMessage string
+	ReOpenCount int
+	CloseCount  int
 }
 
 func (w *MockWriter) Write(le level.Level, message string) error {
@@ -24,14 +27,18 @@ func (w *MockWriter) Write(le level.Level, message string) error {
 }
 
 func (w *MockWriter) ReOpen() error {
-	panic("implement me")
+	w.ReOpenCount++
+	return nil
 }
 
 func (w *MockWriter) Close() error {
-	panic("implement me")
+	w.CloseCount++
+	return nil
 }
 
 func TestGlobalFilters(t *testing.T) {
+	log.Reset()
+
 	mockWriter := &MockWriter{}
 
 	log.DefaultLogWriter(mockWriter)
@@ -47,72 +54,166 @@ func TestGlobalFilters(t *testing.T) {
 	assert.Regexp(t, regexp.MustCompile("^\\[.*?\\] .*?[DEBUG].*?Hello.*?\"user_id\":123"), mockWriter.LastMessage)
 }
 
-func TestModule(t *testing.T) {
+func TestFilters(t *testing.T) {
+	log.Reset()
+
+	mockWriter := &MockWriter{}
+	log.DefaultLogWriter(mockWriter)
+	log.DefaultLogFormatter(formatter.NewDefaultFormatter(false))
+
+	log.Module("test").AddFilter(func(filter log.Filter) log.Filter {
+		return func(f event.Event) {
+			f.Fields.CustomFields["user_id"] = 123
+			filter(f)
+		}
+	})
+
+	log.Module("test").Debug("hello")
+	assert.Regexp(t, regexp.MustCompile("\"user_id\":123"), mockWriter.LastMessage)
+
+	log.Module("test2").Debug("hello")
+	assert.NotRegexp(t, regexp.MustCompile("\"user_id\":123"), mockWriter.LastMessage)
+}
+
+func TestGlobalFields(t *testing.T) {
+	log.Reset()
+
+	mockWriter := &MockWriter{}
+	log.DefaultLogFormatter(formatter.NewDefaultFormatter(false))
+	log.DefaultLogWriter(mockWriter)
+
 	log.GlobalFields(func(c event.Fields) {
-		c.GlobalFields["ref"] = "190101931"
-	})
-	log.Default().AddFilter(func(filter log.Filter) log.Filter {
-		return func(f event.Event) {
-			f.Fields.GlobalFields["ref"] = "6f96cfdfe"
-			filter(f)
-		}
+		c.GlobalFields["ref"] = "abcd"
+		c.CustomFields["user_id"] = 123
 	})
 
-	log.Default().LogLevel(level.Debug)
-	log.Debug("细雨微风岸，危樯独夜舟")
-	log.Error("月上柳梢头，人约黄昏后")
-	log.WithFields(log.Fields{
-		"user_id":  123,
-		"username": "Tom",
-	}).Warningf("君子坦荡荡，小人常戚戚")
+	log.Module("test").Debug("hello")
+	assert.Regexp(t, regexp.MustCompile("#ref"), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile("\"user_id\""), mockWriter.LastMessage)
 
-	log.Module("order.test.scheduler").Noticef("order %s created", "1234592")
-	log.Module("order.scheduler.module1.module2").Infof("order %s created", "1234592")
-	log.Module("order.apple").Debugf("order %s created", "1234592")
-	log.Module("order").Errorf("order %s created", "1234592")
-	log.Module("order").Emergencyf("order %s created", "1234592")
-	log.Module("order").Warningf("order %s created", "1234592")
-	log.Module("order").Alertf("order %s created", "1234592")
-	log.Module("order").Criticalf("order %s created\n", "1234592")
+	log.Module("test").GlobalFields(func(c event.Fields) {
+		c.CustomFields["enterprise_id"] = 123
+	})
 
-	log.Module("user").Formatter(formatter.NewJSONWithTimeFormatter()).Error("user create failed")
+	log.Module("test").Debug("hello")
+	assert.NotRegexp(t, regexp.MustCompile("#ref"), mockWriter.LastMessage)
+	assert.NotRegexp(t, regexp.MustCompile("\"user_id\""), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile("\"enterprise_id\""), mockWriter.LastMessage)
 
-	log.WithFields(nil).Debug("error occur")
-	log.Module("purchase").Formatter(formatter.NewJSONWithTimeFormatter()).WithFields(nil).Infof("用户 %s 已创建", "mylxsw")
-
-	userLog := log.Module("user")
-	userLog.WithFields(log.Fields{
-		"id":   123,
-		"name": "lixiaoyao",
-	}).Debugf("Hello, %s", "world")
-
-	taskLogger := log.Module("log.user.tasks").WithFileLine(true).GlobalFields(func(c event.Fields) {
+	log.Module("test").GlobalFields(func(c event.Fields) {
+		c.CustomFields["enterprise_id"] = 123
 		log.GetDefaultConfig().GlobalFields(c)
-		c.GlobalFields["enterprise_id"] = 15
-	})
-	taskLogger.Debug("Hello, world")
-
-	enterpriseJobLogger := log.Module("log.user.enterprise.jobs").WithFileLine(true).Formatter(formatter.NewJSONFormatter())
-
-	enterpriseJobLogger.AddFilter(func(filter log.Filter) log.Filter {
-		return func(f event.Event) {
-			// filter(f)
-			f.Level = level.Emergency
-			filter(f)
-		}
 	})
 
-	enterpriseJobLogger.AddFilter(func(filter log.Filter) log.Filter {
-		return func(f event.Event) {
-			filter(f)
-		}
-	})
+	log.Module("test").Debug("hello")
+	assert.Regexp(t, regexp.MustCompile("#ref"), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile("\"user_id\""), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile("\"enterprise_id\""), mockWriter.LastMessage)
+}
 
-	enterpriseJobLogger.Debug("He remembered the count of Monte cristo")
-	enterpriseJobLogger.Info("You are mistaken💯 I am not the Count of Monte Cristo")
-	enterpriseJobLogger.Error("The noiseless door again turned on its hinges, and the Count of Monte Cristo reappeared")
-	enterpriseJobLogger.WithFields(log.Fields{
-		"user_id":  123,
-		"username": "Tom",
-	}).Warningf("君子坦荡荡，小人常戚戚")
+func TestBasicLog(t *testing.T) {
+	log.Reset()
+
+	mockWriter := &MockWriter{}
+	log.DefaultLogFormatter(formatter.NewDefaultFormatter(false))
+	log.DefaultLogWriter(mockWriter)
+
+	log.Emergency("hello")
+	assert.Equal(t, level.Emergency, mockWriter.LastLevel)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {}", level.Emergency.GetLevelName())), mockWriter.LastMessage)
+
+	log.Alert("hello")
+	assert.Equal(t, level.Alert, mockWriter.LastLevel)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {}", level.Alert.GetLevelName())), mockWriter.LastMessage)
+
+	log.Critical("hello")
+	assert.Equal(t, level.Critical, mockWriter.LastLevel)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {}", level.Critical.GetLevelName())), mockWriter.LastMessage)
+
+	log.Error("hello")
+	assert.Equal(t, level.Error, mockWriter.LastLevel)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {}", level.Error.GetLevelName())), mockWriter.LastMessage)
+
+	log.Warning("hello")
+	assert.Equal(t, level.Warning, mockWriter.LastLevel)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {}", level.Warning.GetLevelName())), mockWriter.LastMessage)
+
+	log.Notice("hello")
+	assert.Equal(t, level.Notice, mockWriter.LastLevel)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {}", level.Notice.GetLevelName())), mockWriter.LastMessage)
+
+	log.Info("hello")
+	assert.Equal(t, level.Info, mockWriter.LastLevel)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {}", level.Info.GetLevelName())), mockWriter.LastMessage)
+
+	log.Debug("hello")
+	assert.Equal(t, level.Debug, mockWriter.LastLevel)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {}", level.Debug.GetLevelName())), mockWriter.LastMessage)
+}
+
+func TestBasicLogf(t *testing.T) {
+	log.Reset()
+
+	mockWriter := &MockWriter{}
+	log.DefaultLogFormatter(formatter.NewDefaultFormatter(false))
+	log.DefaultLogWriter(mockWriter)
+
+	log.Emergencyf("hello %s", "world")
+	assert.Equal(t, level.Emergency, mockWriter.LastLevel)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {}", level.Emergency.GetLevelName())), mockWriter.LastMessage)
+
+	log.Alertf("hello %s", "world")
+	assert.Equal(t, level.Alert, mockWriter.LastLevel)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {}", level.Alert.GetLevelName())), mockWriter.LastMessage)
+
+	log.Criticalf("hello %s", "world")
+	assert.Equal(t, level.Critical, mockWriter.LastLevel)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {}", level.Critical.GetLevelName())), mockWriter.LastMessage)
+
+	log.Errorf("hello %s", "world")
+	assert.Equal(t, level.Error, mockWriter.LastLevel)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {}", level.Error.GetLevelName())), mockWriter.LastMessage)
+
+	log.Warningf("hello %s", "world")
+	assert.Equal(t, level.Warning, mockWriter.LastLevel)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {}", level.Warning.GetLevelName())), mockWriter.LastMessage)
+
+	log.Noticef("hello %s", "world")
+	assert.Equal(t, level.Notice, mockWriter.LastLevel)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {}", level.Notice.GetLevelName())), mockWriter.LastMessage)
+
+	log.Infof("hello %s", "world")
+	assert.Equal(t, level.Info, mockWriter.LastLevel)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {}", level.Info.GetLevelName())), mockWriter.LastMessage)
+
+	log.Debugf("hello %s", "world")
+	assert.Equal(t, level.Debug, mockWriter.LastLevel)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {}", level.Debug.GetLevelName())), mockWriter.LastMessage)
+}
+
+func TestLogger_ReOpenClose(t *testing.T) {
+	log.Reset()
+
+	mockWriter := &MockWriter{}
+	log.SetWriter(mockWriter)
+
+	assert.NoError(t, log.Close())
+	assert.Equal(t, 1, mockWriter.CloseCount)
+
+	assert.NoError(t, log.ReOpen())
+	assert.Equal(t, 1, mockWriter.ReOpenCount)
+	assert.Equal(t, 1, mockWriter.CloseCount)
+
+	for _, err := range log.CloseAll() {
+		assert.NoError(t, err)
+	}
+	assert.Equal(t, 2, mockWriter.CloseCount)
+	assert.Equal(t, 1, mockWriter.ReOpenCount)
+
+	for _, err := range log.ReOpenAll() {
+		assert.NoError(t, err)
+	}
+	assert.Equal(t, 2, mockWriter.CloseCount)
+	assert.Equal(t, 2, mockWriter.ReOpenCount)
+
 }

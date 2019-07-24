@@ -8,6 +8,10 @@ import (
 	"github.com/mylxsw/asteria/writer"
 )
 
+func init() {
+	Reset()
+}
+
 type Fields map[string]interface{}
 
 // ReOpenAll reopen all logger
