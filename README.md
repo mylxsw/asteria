@@ -10,7 +10,7 @@
 
 **Asteria** is a logging library for go.
 
-The easiest way to write a log
+The most straightforward way to write a log
 
     log.Debug("Drizzle breeze shore, dangerous night boat")
     log.Error("On the moon, the willow head, after the evening")
@@ -36,7 +36,7 @@ Log according to different modules
 
 ## Customize
 
-## Output the file line number of the caller
+## Write the line number of the file for caller
 
     // default display file line number 
     log.DefaultWithFileLine(true)
@@ -45,7 +45,7 @@ Log according to different modules
 
 ### Filter
 
-Filter supports separate settings for the specified module or global settings. With Filter, you can modify the log or cancel the log output before the log formatted output.
+The filter supports separate settings for the specified module or global settings. With Filter, you can modify the log or cancel the log output before the log formatted output.
 
 When multiple Filters are specified, multiple Filters are executed in the order they were added, and Global Filter takes precedence over a separate Filter set for the module.
 
@@ -84,9 +84,9 @@ Asteria supports custom log formats, just implement the `formatter.Formatter` in
 
 Three types of log formatting methods are provided by default
 
-- text format, default mode
-- Json with time
-- Json
+- text format, the default mode
+- JSON with time
+- JSON
 
 #### Text
 
@@ -99,11 +99,11 @@ Use the default format, no need to make any settings, you can also specify
     // Set the log format of the specified module
     log.Module("asteria").Formatter(formatter.NewDefaultFormatter())
 
-Format is as follows
+The format is as follows
 
     [RFC3339 formatted time] [logLevel] moduleName logMessage {logContext}
 
-The module name field is specified using the `log.Module` method, and the default log module is automatically generated based on the package name of the caller. Context information mainly consists of two parts
+The module name field is specified using the `log.Module` method and the default log module is automatically generated based on the package name of the caller. Context information mainly consists of two parts
 
 - Fields starting with `#` are automatically set by the system
 - Other fields are context information set by the user using `WithFields`
@@ -173,7 +173,7 @@ The default output mode is **standard output**, no need to make any settings, of
     log.Module("asteria").Writer(writer.NewSingleFileWriter("/var/log/asteria.log"))
     
 
-If you want to rotating the logs according to your own rules, such as generating new log files every day, you can use `RotatingFileWriter`
+If you want to rotate the logs according to your own rules, such as generating new log files every day, you can use `RotatingFileWriter`
 
     fw := writer.NewDefaultRotatingFileWriter(func(le level.Level) string {
         return fmt.Sprintf("asteria.%s.log", time.Now().Format("20060102"))
