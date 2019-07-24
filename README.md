@@ -12,23 +12,23 @@
 
 The easiest way to write a log
 
-    log.Debug("细雨微风岸，危樯独夜舟")
-    log.Error("月上柳梢头，人约黄昏后")
-    log.WithContext(log.C{
+    log.Debug("Drizzle breeze shore, dangerous night boat")
+    log.Error("On the moon, the willow head, after the evening")
+    log.WithFields(log.Fields{
         "user_id":  123,
         "username": "Tom",
-    }).Warningf("君子坦荡荡，小人常戚戚")
+    }).Warningf("The gentleman is frank, the villain is often jealous.")
 
 Log according to different modules
 
     var logger = log.Module("asteria.user.enterprise.jobs")
        
-    logger.Debug("细雨微风岸，危樯独夜舟")
-    logger.Error("月上柳梢头，人约黄昏后")
-    logger.WithContext(log.C{
+    logger.Debug("Drizzle breeze shore, dangerous night boat")
+    logger.Error("On the moon, the willow head, after the evening")
+    logger.WithFields(log.Fields{
         "user_id":  123,
         "username": "Tom",
-    }).Warningf("君子坦荡荡，小人常戚戚")
+    }).Warningf("The gentleman is frank, the villain is often jealous.")
     
 ## Install
 
@@ -57,7 +57,7 @@ When multiple Filters are specified, multiple Filters are executed in the order 
             //     return
             // }
             
-            f.Context.UserContext["user_id"] = 123
+            f.Fields.CustomFields["user_id"] = 123
             // Not calling filter(f) will cancel the output of the log
             filter(f)
         }
@@ -93,7 +93,7 @@ Three types of log formatting methods are provided by default
 Use the default format, no need to make any settings, you can also specify
 
     // Set the default module log format
-    log.Formatter(formatter.NewDefaultFormatter())
+    log.Formatter(formatter.NewDefaultFormatter(true))
     // Or
     log.Default().Formatter(formatter.NewDefaultFormatter())
     // Set the log format of the specified module
@@ -106,13 +106,13 @@ Format is as follows
 The module name field is specified using the `log.Module` method, and the default log module is automatically generated based on the package name of the caller. Context information mainly consists of two parts
 
 - Fields starting with `#` are automatically set by the system
-- Other fields are context information set by the user using `WithContext`
+- Other fields are context information set by the user using `WithFields`
 
 Sample log output
 
 ![](https://ssl.aicode.cc/2019-07-17-15633539363228.jpg)
 
-> You can set the default color output by `log.DefaultWithColor(false)` or set a module to turn off color output via `log.Module("asteria").WithColor(false)`.
+> You can set the default color output by `log.DefaultLogFormatter(formatter.NewDefaultFormatter(false))` or set a module to turn off color output via `log.Module("asteria").Formatter(formatter.NewDefaultFormatter(false))`.
 
 #### Json with Time
 
@@ -151,7 +151,6 @@ Asteria supports custom log output mode, only need to implement `writer.Writer` 
         Close() error
     }
 
-Three types of log output methods are provided by default.
 
 #### Stdout
 
@@ -172,6 +171,16 @@ The default output mode is **standard output**, no need to make any settings, of
     log.Default().Writer(writer.NewSingleFileWriter("/var/log/asteria.log"))
     // Set the log format of the specified module
     log.Module("asteria").Writer(writer.NewSingleFileWriter("/var/log/asteria.log"))
+    
+
+If you want to rotating the logs according to your own rules, such as generating new log files every day, you can use `RotatingFileWriter`
+
+    fw := writer.NewDefaultRotatingFileWriter(func(le level.Level) string {
+        return fmt.Sprintf("asteria.%s.log", time.Now().Format("20060102"))
+    })
+    
+    log.Writer(fw)
+
 
 #### Syslog
 
@@ -181,3 +190,34 @@ The default output mode is **standard output**, no need to make any settings, of
     log.Default().Writer(writer.NewSyslogWriter("", "", syslog.LOG_DEBUG | syslog.LOG_SYSLOG, "asteria"))
     // Set the log format of the specified module
     log.Module("asteria").Writer(writer.NewSyslogWriter("", "", syslog.LOG_DEBUG | syslog.LOG_SYSLOG, "asteria"))
+
+#### Stream
+
+    // Set the default module log output
+    log.Writer(writer.NewStreamWriter(os.Stdout))
+    // can alse be like this
+    log.Default().Writer(writer.NewStreamWriter(os.Stdout))
+    // Set the log format of the specified module
+    log.Module("asteria").Writer(writer.NewStreamWriter(os.Stdout))
+
+#### Stack
+
+If you want to write the log to multiple different outputs, you can use `StackWriter`
+
+    m1 := writer.NewStdoutWriter()
+    m2 := writer.NewSyslogWriter("", "", syslog.DEBUG, "asteria")
+    m3 := writer.NewDefaultFileWriter("/var/log/asteria.log")
+
+    stack := writer.NewStackWriter()
+    // only write debug log to m1
+    stack.Push(m1, level.Debug)
+    // only write error and emergency log to m2
+    stack.Push(m2, level.Error, level.Emergency)
+    // all logs will write to m3
+    stack.Push(m3)
+    
+    log.Writer(stack)
+    // Or
+    log.Default().Writer(stack)
+    // Or
+    log.Module("asteria").Writer(stack)
