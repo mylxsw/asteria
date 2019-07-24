@@ -11,7 +11,7 @@ type CallGraphInfo struct {
 	Line        int
 }
 
-// CallGraph https://stackoverflow.com/a/25265493/2429469
+// CallGraph analyze the package name and file lines of the caller
 func CallGraph(skip int) CallGraphInfo {
 	pc, f, line, _ := runtime.Caller(skip)
 
