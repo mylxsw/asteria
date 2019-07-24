@@ -13,6 +13,27 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestFileWriter_Write(t *testing.T) {
+	fw := writer.NewDefaultFileWriter("test/test.log")
+	err := fw.Write(level.Debug, "Hello, world")
+
+	assert.Error(t, err)
+
+	fw = writer.NewDefaultFileWriter("test.log")
+	defer func() {
+		_ = os.Remove("test.log")
+	}()
+
+	assert.NoError(t, fw.Write(level.Debug, "Hello, world"))
+	assert.NoError(t, fw.Write(level.Debug, "Hello, world"))
+	assert.NoError(t, fw.Write(level.Debug, "Hello, world"))
+	assert.NoError(t, fw.Write(level.Debug, "Hello, world"))
+
+	rs, err := ioutil.ReadFile("test.log")
+	assert.NoError(t, err)
+	assert.Equal(t, len(strings.Split(string(rs), "\n")), 4+1)
+}
+
 func TestRotatingFileWriter_Write(t *testing.T) {
 	fileNo1 := fmt.Sprintf("test-%s.log", time.Now().Format("20060102150405"))
 	fileNo2 := fmt.Sprintf("test-%s.log", time.Now().Format("20060102150405")+"-2")
@@ -51,4 +72,23 @@ func TestRotatingFileWriter_Write(t *testing.T) {
 	rs2, err := ioutil.ReadFile(fileNo2)
 	assert.NoError(t, err)
 	assert.Equal(t, len(strings.Split(string(rs2), "\n")), 4+1)
+}
+
+func TestRotatingFileWriter_ReOpen(t *testing.T) {
+	filename := "test_rotating_file.log"
+	fw := writer.NewDefaultRotatingFileWriter(func(le level.Level) string {
+		return filename
+	})
+
+	defer func() {
+		_ = os.Remove(filename)
+	}()
+
+	assert.NoError(t, fw.Write(level.Debug, "Hello, world"))
+	assert.NoError(t, fw.Write(level.Error, "Hello, world"))
+
+	assert.NoError(t, fw.ReOpen())
+	assert.NoError(t, fw.Close())
+
+	assert.NoError(t, fw.Write(level.Error, "Hello, world"))
 }

@@ -14,6 +14,11 @@ func TestGetLevelByName(t *testing.T) {
 		"emergency": level.Emergency,
 		"DEBUG":     level.Debug,
 		"NOTice":    level.Notice,
+		"alert":     level.Alert,
+		"Critical":  level.Critical,
+		"errOR":     level.Error,
+		"warning":   level.Warning,
+		"abc":       level.Level(0),
 	}
 
 	for key, val := range testData {
@@ -23,9 +28,15 @@ func TestGetLevelByName(t *testing.T) {
 
 func TestGetLevelName(t *testing.T) {
 	var testData = map[level.Level]string{
-		level.Alert:     "ALERT",
-		level.Emergency: "EMERGENCY",
-		level.Debug:     "DEBUG",
+		level.Alert:      "ALERT",
+		level.Emergency:  "EMERGENCY",
+		level.Debug:      "DEBUG",
+		level.Warning:    "WARNING",
+		level.Error:      "ERROR",
+		level.Critical:   "CRITICAL",
+		level.Notice:     "NOTICE",
+		level.Info:       "INFO",
+		level.Level(100): "UNKNOWN",
 	}
 
 	for key, val := range testData {
@@ -35,14 +46,15 @@ func TestGetLevelName(t *testing.T) {
 
 func TestGetLevelNameAbbreviation(t *testing.T) {
 	var testData = map[level.Level]string{
-		level.Emergency: "EMCY",
-		level.Alert:     "ALER",
-		level.Critical:  "CRIT",
-		level.Error:     "EROR",
-		level.Warning:   "WARN",
-		level.Notice:    "NOTI",
-		level.Info:      "INFO",
-		level.Debug:     "DEBG",
+		level.Emergency:  "EMCY",
+		level.Alert:      "ALER",
+		level.Critical:   "CRIT",
+		level.Error:      "EROR",
+		level.Warning:    "WARN",
+		level.Notice:     "NOTI",
+		level.Info:       "INFO",
+		level.Debug:      "DEBG",
+		level.Level(100): "UNON",
 	}
 
 	for l, exp := range testData {
