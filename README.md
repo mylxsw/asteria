@@ -6,6 +6,7 @@
 [![codecov](https://codecov.io/gh/mylxsw/asteria/branch/master/graph/badge.svg)](https://codecov.io/gh/mylxsw/asteria)
 [![GoDoc](https://godoc.org/github.com/mylxsw/asteria?status.svg)](https://godoc.org/github.com/mylxsw/asteria)
 [![Sourcegraph](https://sourcegraph.com/github.com/mylxsw/asteria/-/badge.svg)](https://sourcegraph.com/github.com/mylxsw/asteria?badge)
+[![GitHub](https://img.shields.io/github/license/mylxsw/asteria.svg)](https://github.com/mylxsw/asteria)
 
 **Asteria** is a logging library for go.
 
