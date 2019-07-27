@@ -217,3 +217,45 @@ func TestLogger_ReOpenClose(t *testing.T) {
 	assert.Equal(t, 2, mockWriter.ReOpenCount)
 
 }
+
+func TestLogger_LogLevel(t *testing.T) {
+	log.Reset()
+
+	mockWriter := &MockWriter{}
+	log.SetWriter(mockWriter)
+
+	log.SetLevel(level.Info)
+
+	log.Debug("hello")
+	assert.Equal(t, level.Level(0), mockWriter.LastLevel)
+	assert.Equal(t, "", mockWriter.LastMessage)
+
+	log.Warning("hello")
+	assert.Equal(t, level.Warning, mockWriter.LastLevel)
+	assert.NotEqual(t, "", mockWriter.LastMessage)
+
+	log.Info("info message")
+	assert.Equal(t, level.Info, mockWriter.LastLevel)
+	assert.Regexp(t, regexp.MustCompile("info message"), mockWriter.LastMessage)
+
+	log.Debug("debug message")
+	assert.Equal(t, level.Info, mockWriter.LastLevel)
+	assert.Regexp(t, regexp.MustCompile("info message"), mockWriter.LastMessage)
+}
+
+func TestLogger_Formatter(t *testing.T) {
+	log.Reset()
+
+	mockWriter := &MockWriter{}
+	log.SetWriter(mockWriter)
+
+	log.SetFormatter(formatter.NewJSONFormatter())
+
+	log.Debug("hello")
+	assert.Equal(t, level.Debug, mockWriter.LastLevel)
+	assert.Regexp(t, regexp.MustCompile("^{.*}$"), mockWriter.LastMessage)
+
+	log.Warning("warning")
+	assert.Equal(t, level.Warning, mockWriter.LastLevel)
+	assert.Regexp(t, regexp.MustCompile("^{.*}$"), mockWriter.LastMessage)
+}

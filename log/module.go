@@ -276,7 +276,7 @@ func (module *Logger) Output(callDepth int, le level.Level, userContext Fields, 
 	var chain Filter = func(f event.Event) {
 		message := module.getFormatter().Format(f)
 		if err := module.getWriter().Write(le, message); err != nil {
-			fmt.Printf("can not write to output: %s", err)
+			panic(fmt.Sprintf("can not write to output: %s", err))
 		}
 	}
 

@@ -29,6 +29,8 @@ func TestFileWriter_Write(t *testing.T) {
 	assert.NoError(t, fw.Write(level.Debug, "Hello, world"))
 	assert.NoError(t, fw.Write(level.Debug, "Hello, world"))
 
+	assert.Equal(t, "test.log", fw.GetFilename())
+
 	rs, err := ioutil.ReadFile("test.log")
 	assert.NoError(t, err)
 	assert.Equal(t, len(strings.Split(string(rs), "\n")), 4+1)

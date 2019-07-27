@@ -14,4 +14,6 @@ func TestColorfulLevelName(t *testing.T) {
 
 	misc.SetLevelWithColor(level.Debug, color.Green, color.Magenta)
 	assert.Equal(t, color.BackgroundWrap(color.Green, color.Magenta, "[DEBG]"), misc.ColorfulLevelName(level.Debug))
+
+	assert.Equal(t, "[UNON]", misc.ColorfulLevelName(level.Level(0)))
 }

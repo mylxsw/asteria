@@ -8,7 +8,7 @@ type Level int
 
 // 日志输出级别
 const (
-	Emergency Level = iota
+	Emergency Level = iota + 1
 	Alert
 	Critical
 	Error

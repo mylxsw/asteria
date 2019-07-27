@@ -14,8 +14,8 @@ func TestModuleNameAbbr(t *testing.T) {
 		"a.bc":        "a.bc",
 		"ab.bc":       "a.bc",
 		"中文.布尔":       "中.布尔",
+		"xxx..abc":    "x.abc",
 	}
-
 	for tc, expected := range testCases {
 		assert.Equal(t, expected, misc.ModuleNameAbbr(tc))
 	}
