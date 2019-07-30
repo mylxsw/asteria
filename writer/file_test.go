@@ -127,7 +127,7 @@ func TestRotatingFileWriter_AutoGC(t *testing.T) {
 		return fmt.Sprintf("%s-%s.log", module, le.GetLevelName())
 	})
 
-	fw.AutoGC(context.Background(), time.Millisecond)
+	fw.AutoGC(context.Background(), 1*time.Millisecond)
 
 	defer func() {
 		_ = os.Remove("test1-DEBUG.log")
@@ -140,11 +140,9 @@ func TestRotatingFileWriter_AutoGC(t *testing.T) {
 	_ = fw.Write(level.Warning, "test2", "hello")
 
 	assert.ElementsMatch(t, []string{"test1-DEBUG.log", "test2-WARNING.log"}, fw.GetOpenedFiles())
+	time.Sleep(3 * time.Millisecond)
+	assert.Empty(t, fw.GetOpenedFiles())
 
-	time.Sleep(2 * time.Millisecond)
-
-	_ = fw.Write(level.Debug, "test3", "hello, world")
-	_ = fw.Write(level.Error, "test4", "hello, world")
-
-	assert.ElementsMatch(t, []string{"test3-DEBUG.log", "test4-ERROR.log"}, fw.GetOpenedFiles())
+	assert.NoError(t, fw.Write(level.Debug, "test3", "hello, world"))
+	assert.NoError(t, fw.Write(level.Error, "test4", "hello, world"))
 }
