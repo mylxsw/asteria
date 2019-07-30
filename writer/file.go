@@ -1,8 +1,10 @@
 package writer
 
 import (
+	"context"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/mylxsw/asteria/level"
 )
@@ -28,7 +30,7 @@ func NewDefaultFileWriter(filename string) *FileWriter {
 }
 
 // Write the message to file
-func (writer *FileWriter) Write(le level.Level, message string) error {
+func (writer *FileWriter) Write(le level.Level, module string, message string) error {
 	f, err := writer.open()
 	if err != nil {
 		return err
@@ -54,6 +56,7 @@ func (writer *FileWriter) Close() error {
 	defer writer.lock.Unlock()
 
 	if writer.file != nil {
+		_ = writer.file.Sync()
 		err := writer.file.Close()
 		if err != nil {
 			return err
@@ -85,13 +88,20 @@ func (writer *FileWriter) GetFilename() string {
 	return writer.filename
 }
 
-type RotatingFileFn func(le level.Level) string
+func (writer *FileWriter) GetFileStat() (os.FileInfo, error) {
+	writer.lock.Lock()
+	defer writer.lock.Unlock()
+
+	return writer.file.Stat()
+}
+
+type RotatingFileFn func(le level.Level, module string) string
 
 type RotatingFileWriter struct {
 	fn          RotatingFileFn
 	flag        int
 	perm        os.FileMode
-	openedFiles map[level.Level]*FileWriter
+	openedFiles map[string]*FileWriter
 
 	lock sync.Mutex
 }
@@ -101,28 +111,73 @@ func NewDefaultRotatingFileWriter(fn RotatingFileFn) *RotatingFileWriter {
 }
 
 func NewRotatingFileWriter(flag int, perm os.FileMode, fn RotatingFileFn) *RotatingFileWriter {
-	return &RotatingFileWriter{fn: fn, flag: flag, perm: perm, openedFiles: make(map[level.Level]*FileWriter)}
+	return &RotatingFileWriter{fn: fn, flag: flag, perm: perm, openedFiles: make(map[string]*FileWriter),}
 }
 
-func (writer *RotatingFileWriter) Write(le level.Level, message string) error {
-	return writer.getWriter(le).Write(le, message)
+func (writer *RotatingFileWriter) Write(le level.Level, module string, message string) error {
+	return writer.getWriter(writer.fn(le, module)).Write(le, module, message)
 }
 
-func (writer *RotatingFileWriter) getWriter(le level.Level) *FileWriter {
-	destFile := writer.fn(le)
+func (writer *RotatingFileWriter) AutoGC(ctx context.Context, interval time.Duration) {
+	go func() {
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
 
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				writer.GC(interval)
+			}
+		}
+	}()
+}
+
+func (writer *RotatingFileWriter) GC(inactiveDuration time.Duration) {
 	writer.lock.Lock()
 	defer writer.lock.Unlock()
 
-	w, ok := writer.openedFiles[le]
-	if ok && w.filename != destFile {
-		_ = w.Close()
-		ok = false
+	deleteFiles := make([]string, 0)
+	for filename, f := range writer.openedFiles {
+		stat, err := f.GetFileStat()
+		if err != nil {
+			continue
+		}
+
+		if time.Now().After(stat.ModTime().Add(inactiveDuration)) {
+			deleteFiles = append(deleteFiles, filename)
+		}
 	}
 
+	for _, filename := range deleteFiles {
+		if f, ok := writer.openedFiles[filename]; ok {
+			_ = f.Close()
+			delete(writer.openedFiles, filename)
+		}
+	}
+}
+
+func (writer *RotatingFileWriter) GetOpenedFiles() []string {
+	writer.lock.Lock()
+	defer writer.lock.Unlock()
+
+	files := make([]string, 0)
+	for filename, _ := range writer.openedFiles {
+		files = append(files, filename)
+	}
+
+	return files
+}
+
+func (writer *RotatingFileWriter) getWriter(destFile string) *FileWriter {
+	writer.lock.Lock()
+	defer writer.lock.Unlock()
+
+	w, ok := writer.openedFiles[destFile]
 	if !ok {
 		w = NewFileWriter(destFile, writer.flag, writer.perm)
-		writer.openedFiles[le] = w
+		writer.openedFiles[destFile] = w
 	}
 
 	return w

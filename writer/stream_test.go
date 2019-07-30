@@ -22,8 +22,8 @@ func TestStreamWriter_Write(t *testing.T) {
 	mockWriter := &MockIOWriter{}
 	sw := writer.NewStreamWriter(mockWriter)
 
-	_ = sw.Write(level.Debug, "Hello, world")
-	_ = sw.Write(level.Warning, "Yes, you are")
+	_ = sw.Write(level.Debug, "", "Hello, world")
+	_ = sw.Write(level.Warning, "", "Yes, you are")
 
 	assert.Equal(t, 2, mockWriter.count)
 	assert.NoError(t, sw.Close())

@@ -15,7 +15,7 @@ import (
 
 type ErrorWriter struct{}
 
-func (e ErrorWriter) Write(le level.Level, message string) error {
+func (e ErrorWriter) Write(le level.Level, module string, message string) error {
 	return fmt.Errorf("has some error")
 }
 

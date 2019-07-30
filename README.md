@@ -146,7 +146,7 @@ Sample log output
 Asteria supports custom log output mode, only need to implement `writer.Writer` interface.
     
     type Writer interface {
-        Write(le level.Level, message string) error
+        Write(le level.Level, module string, message string) error
         ReOpen() error
         Close() error
     }
@@ -175,9 +175,15 @@ The default output mode is **standard output**, no need to make any settings, of
 
 If you want to rotate the logs according to your own rules, such as generating new log files every day, you can use `RotatingFileWriter`
 
-    fw := writer.NewDefaultRotatingFileWriter(func(le level.Level) string {
+    fw := writer.NewDefaultRotatingFileWriter(func(le level.Level, module string) string {
         return fmt.Sprintf("asteria.%s.log", time.Now().Format("20060102"))
     })
+    
+    // you can call GC to close unused files every time you wanted
+    fw.GC(1 * time.Hour)
+    // Or you can call AutoGC to start auto gc support
+    // asteria will call GC function every one hour for you automatically
+    fw.AutoGC(context.Background(), time.Hour)
     
     log.Writer(fw)
 
@@ -210,11 +216,11 @@ If you want to write the log to multiple different outputs, you can use `StackWr
 
     stack := writer.NewStackWriter()
     // only write debug log to m1
-    stack.Push(m1, level.Debug)
+    stack.PushWithLevels(m1, level.Debug)
     // only write error and emergency log to m2
-    stack.Push(m2, level.Error, level.Emergency)
+    stack.PushWithLevels(m2, level.Error, level.Emergency)
     // all logs will write to m3
-    stack.Push(m3)
+    stack.PushWithLevels(m3)
     
     log.Writer(stack)
     // Or

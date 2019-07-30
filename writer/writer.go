@@ -6,7 +6,7 @@ import (
 
 // Writer 日志输出接口
 type Writer interface {
-	Write(le level.Level, message string) error
+	Write(le level.Level, module string, message string) error
 	ReOpen() error
 	Close() error
 }

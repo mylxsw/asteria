@@ -20,7 +20,7 @@ func NewStdoutWriter() *StreamWriter {
 	return NewStreamWriter(os.Stdout)
 }
 
-func (writer *StreamWriter) Write(le level.Level, message string) error {
+func (writer *StreamWriter) Write(le level.Level, module string, message string) error {
 	_, err := fmt.Fprintln(writer.w, message)
 	return err
 }

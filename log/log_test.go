@@ -19,7 +19,7 @@ type MockWriter struct {
 	CloseCount  int
 }
 
-func (w *MockWriter) Write(le level.Level, message string) error {
+func (w *MockWriter) Write(le level.Level, module string, message string) error {
 	w.LastLevel = le
 	w.LastMessage = message
 

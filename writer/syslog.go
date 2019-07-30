@@ -29,7 +29,7 @@ func NewSyslogWriter(network, raddr string, priority syslog.Priority, tag string
 	}
 }
 
-func (w *SyslogWriter) Write(le level.Level, message string) error {
+func (w *SyslogWriter) Write(le level.Level, module string, message string) error {
 	writer, err := w.writer()
 	if err != nil {
 		return err
