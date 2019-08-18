@@ -1,13 +1,15 @@
 package formatter
 
 import (
-	"encoding/json"
 	"fmt"
 	"time"
 
+	jsoniter "github.com/json-iterator/go"
 	"github.com/mylxsw/asteria/event"
 	"github.com/mylxsw/asteria/level"
 )
+
+var json = jsoniter.ConfigFastest
 
 type jsonOutput struct {
 	ModuleName string                 `json:"module"`

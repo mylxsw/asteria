@@ -16,16 +16,100 @@ import (
 type Filter func(f event.Event)
 type FilterChain func(filter Filter) Filter
 
+var loggers = make(Loggers)
+var moduleLock sync.RWMutex
+
+// Loggers is a map holds all loggers
+type Loggers map[string]*Logger
+
+// All return all loggers
+func All() Loggers {
+	return loggers
+}
+
+// DynamicModuleName set whether enable dynamic module name generate
+func (loggers Loggers) DynamicModuleName(enable bool) {
+	moduleLock.Lock()
+	defer moduleLock.Unlock()
+
+	for _, l := range loggers {
+		l.dynamicModuleName = enable
+	}
+
+	defaultLogConfig.DynamicModuleName = enable
+}
+
+// WithFileLine set whether output file & Line
+func (loggers Loggers) WithFileLine(enable bool) {
+	moduleLock.Lock()
+	defer moduleLock.Unlock()
+
+	for _, l := range loggers {
+		l.fileLine = enable
+	}
+
+	defaultLogConfig.WithFileLine = enable
+}
+
+// Location set default time location
+func (loggers Loggers) Location(loc *time.Location) {
+	moduleLock.Lock()
+	defer moduleLock.Unlock()
+
+	for _, l := range loggers {
+		l.timeLocation = loc
+	}
+
+	defaultLogConfig.TimeLocation = loc
+}
+
+// LogLevel 设置全局默认日志输出级别
+func (loggers Loggers) LogLevel(le level.Level) {
+	moduleLock.Lock()
+	defer moduleLock.Unlock()
+
+	for _, l := range loggers {
+		l.level = le
+	}
+
+	defaultLogConfig.LogLevel = le
+}
+
+// LogFormatter 设置全局默认的日志输出格式化器
+func (loggers Loggers) LogFormatter(f formatter.Formatter) {
+	moduleLock.Lock()
+	defer moduleLock.Unlock()
+
+	for _, l := range loggers {
+		l.formatter = f
+	}
+
+	defaultLogConfig.LogFormatter = f
+}
+
+// LogWriter 设置全局默认的日志输出器
+func (loggers Loggers) LogWriter(w writer.Writer) {
+	moduleLock.Lock()
+	defer moduleLock.Unlock()
+
+	for _, l := range loggers {
+		l.writer = w
+	}
+
+	defaultLogConfig.LogWriter = w
+}
+
 // Logger 日志对象
 type Logger struct {
-	moduleName    string
-	level         func() level.Level
-	formatter     formatter.Formatter
-	writer        writer.Writer
-	timeLocation  func() *time.Location
-	fileLine      func() bool
-	globalContext func() func(c event.Fields)
-	filters       []FilterChain
+	moduleName        string
+	level             level.Level
+	formatter         formatter.Formatter
+	writer            writer.Writer
+	timeLocation      *time.Location
+	dynamicModuleName bool
+	fileLine          bool
+	globalContext     func(c event.Fields)
+	filters           []FilterChain
 
 	lock sync.RWMutex
 }
@@ -62,18 +146,16 @@ func GlobalFilters() []FilterChain {
 	return defaultLogConfig.GlobalFilters
 }
 
-var loggers = make(map[string]*Logger)
-var moduleLock sync.RWMutex
-
 // DefaultConfig 默认配置对象
 type DefaultConfig struct {
-	LogLevel      level.Level
-	LogFormatter  formatter.Formatter
-	LogWriter     writer.Writer
-	TimeLocation  *time.Location
-	WithFileLine  bool
-	GlobalFields  func(c event.Fields)
-	GlobalFilters []FilterChain
+	LogLevel          level.Level
+	LogFormatter      formatter.Formatter
+	LogWriter         writer.Writer
+	TimeLocation      *time.Location
+	WithFileLine      bool
+	DynamicModuleName bool
+	GlobalFields      func(c event.Fields)
+	GlobalFilters     []FilterChain
 }
 
 // 默认配置信息
@@ -85,15 +167,16 @@ func Reset() {
 	defer moduleLock.Unlock()
 
 	defaultLogConfig = DefaultConfig{
-		LogLevel:      level.Debug,
-		LogFormatter:  formatter.NewDefaultFormatter(true),
-		LogWriter:     writer.NewStdoutWriter(),
-		TimeLocation:  time.Local,
-		WithFileLine:  false,
-		GlobalFilters: make([]FilterChain, 0),
+		LogLevel:          level.Debug,
+		LogFormatter:      formatter.NewDefaultFormatter(true),
+		LogWriter:         writer.NewStdoutWriter(),
+		TimeLocation:      time.Local,
+		WithFileLine:      false,
+		DynamicModuleName: false,
+		GlobalFilters:     make([]FilterChain, 0),
 	}
 
-	loggers = make(map[string]*Logger)
+	loggers = make(Loggers)
 }
 
 // GetDefaultConfig return default log config
@@ -115,6 +198,14 @@ func DefaultLocation(loc *time.Location) {
 	defer moduleLock.Unlock()
 
 	defaultLogConfig.TimeLocation = loc
+}
+
+// DefaultDynamicModuleName set if enable dynamic module name generate
+func DefaultDynamicModuleName(enable bool) {
+	moduleLock.Lock()
+	defer moduleLock.Unlock()
+
+	defaultLogConfig.DynamicModuleName = enable
 }
 
 // DefaultLogLevel 设置全局默认日志输出级别
@@ -159,33 +250,14 @@ func Module(moduleName string) *Logger {
 	}
 
 	logger := &Logger{
-		moduleName: moduleName,
-		formatter:  defaultLogConfig.LogFormatter,
-		writer:     defaultLogConfig.LogWriter,
-		level: func() level.Level {
-			moduleLock.RLock()
-			defer moduleLock.RUnlock()
-
-			return defaultLogConfig.LogLevel
-		},
-		timeLocation: func() *time.Location {
-			moduleLock.RLock()
-			defer moduleLock.RUnlock()
-
-			return defaultLogConfig.TimeLocation
-		},
-		fileLine: func() bool {
-			moduleLock.RLock()
-			defer moduleLock.RUnlock()
-
-			return defaultLogConfig.WithFileLine
-		},
-		globalContext: func() func(c event.Fields) {
-			moduleLock.RLock()
-			defer moduleLock.RUnlock()
-
-			return defaultLogConfig.GlobalFields
-		},
+		moduleName:        moduleName,
+		formatter:         defaultLogConfig.LogFormatter,
+		writer:            defaultLogConfig.LogWriter,
+		level:             defaultLogConfig.LogLevel,
+		timeLocation:      defaultLogConfig.TimeLocation,
+		dynamicModuleName: defaultLogConfig.DynamicModuleName,
+		fileLine:          defaultLogConfig.WithFileLine,
+		globalContext:     defaultLogConfig.GlobalFields,
 	}
 
 	loggers[moduleName] = logger
@@ -198,9 +270,7 @@ func (module *Logger) Location(loc *time.Location) *Logger {
 	module.lock.Lock()
 	defer module.lock.Unlock()
 
-	module.timeLocation = func() *time.Location {
-		return loc
-	}
+	module.timeLocation = loc
 
 	return module
 }
@@ -210,10 +280,16 @@ func (module *Logger) WithFileLine(enable bool) *Logger {
 	module.lock.Lock()
 	defer module.lock.Unlock()
 
-	module.fileLine = func() bool {
-		return enable
-	}
+	module.fileLine = enable
+	return module
+}
 
+// DynamicModuleName set whether enable dynamic module name generate
+func (module *Logger) DynamicModuleName(enable bool) *Logger {
+	module.lock.Lock()
+	defer module.lock.Unlock()
+
+	module.dynamicModuleName = enable
 	return module
 }
 
@@ -222,15 +298,13 @@ func (module *Logger) GlobalFields(f func(c event.Fields)) *Logger {
 	module.lock.Lock()
 	defer module.lock.Unlock()
 
-	module.globalContext = func() func(c event.Fields) {
-		return f
-	}
+	module.globalContext = f
 
 	return module
 }
 
 func (module *Logger) Output(callDepth int, le level.Level, userContext Fields, v ...interface{}) {
-	if le > module.level() {
+	if le > module.level {
 		return
 	}
 
@@ -245,28 +319,28 @@ func (module *Logger) Output(callDepth int, le level.Level, userContext Fields, 
 
 	moduleName := module.moduleName
 
-	if moduleName == "" || module.fileLine() {
+	if module.dynamicModuleName || module.fileLine {
 		cg := misc.CallGraph(callDepth)
-		if module.fileLine() {
+		if module.fileLine {
 			logCtx.GlobalFields["file"] = cg.FileName
 			logCtx.GlobalFields["line"] = cg.Line
 			logCtx.GlobalFields["package"] = cg.PackageName
 		}
 
-		if moduleName == "" {
+		if module.dynamicModuleName {
 			moduleName = strings.Replace(cg.PackageName, "/", ".", -1)
 		}
 	}
 
 	if module.globalContext != nil {
-		cf := module.globalContext()
+		cf := module.globalContext
 		if cf != nil {
 			cf(logCtx)
 		}
 	}
 
 	f := event.Event{
-		Time:     time.Now().In(module.timeLocation()),
+		Time:     time.Now().In(module.timeLocation),
 		Module:   moduleName,
 		Level:    le,
 		Fields:   logCtx,
@@ -291,7 +365,7 @@ func (module *Logger) Output(callDepth int, le level.Level, userContext Fields, 
 
 // Default 获取默认的模块日志
 func Default() *Logger {
-	return Module("")
+	return Module("main")
 }
 
 // LogLevel 设置日志输出级别
@@ -299,9 +373,7 @@ func (module *Logger) LogLevel(le level.Level) *Logger {
 	module.lock.Lock()
 	defer module.lock.Unlock()
 
-	module.level = func() level.Level {
-		return le
-	}
+	module.level = le
 
 	return module
 }

@@ -15,6 +15,7 @@ import (
 type MockWriter struct {
 	LastLevel   level.Level
 	LastMessage string
+	WriteCount  int
 	ReOpenCount int
 	CloseCount  int
 }
@@ -22,6 +23,7 @@ type MockWriter struct {
 func (w *MockWriter) Write(le level.Level, module string, message string) error {
 	w.LastLevel = le
 	w.LastMessage = message
+	w.WriteCount++
 
 	return nil
 }

@@ -1,11 +1,13 @@
 package event
 
 import (
-	"encoding/json"
 	"time"
 
+	"github.com/json-iterator/go"
 	"github.com/mylxsw/asteria/level"
 )
+
+var json = jsoniter.ConfigFastest
 
 type Fields struct {
 	CustomFields map[string]interface{}

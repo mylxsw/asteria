@@ -1,7 +1,6 @@
 package formatter
 
 import (
-	"encoding/json"
 	"fmt"
 	"time"
 
