@@ -45,21 +45,21 @@ func Close() error {
 }
 
 // LogLevel 设置日志输出级别
-func SetLevel(le level.Level) *Logger {
+func SetLevel(le level.Level) *AsteriaLogger {
 	return Default().LogLevel(le)
 }
 
 // Formatter 设置日志格式化器
-func SetFormatter(f formatter.Formatter) *Logger {
+func SetFormatter(f formatter.Formatter) *AsteriaLogger {
 	return Default().Formatter(f)
 }
 
 // Writer 设置日志输出器
-func SetWriter(w writer.Writer) *Logger {
+func SetWriter(w writer.Writer) *AsteriaLogger {
 	return Default().Writer(w)
 }
 
-func WithFields(fields Fields) *ContextLogger {
+func WithFields(fields Fields) Logger {
 	return Default().WithFields(fields)
 }
 

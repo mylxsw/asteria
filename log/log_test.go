@@ -261,3 +261,4 @@ func TestLogger_Formatter(t *testing.T) {
 	assert.Equal(t, level.Warning, mockWriter.LastLevel)
 	assert.Regexp(t, regexp.MustCompile("^{.*}$"), mockWriter.LastMessage)
 }
+

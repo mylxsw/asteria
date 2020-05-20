@@ -7,8 +7,24 @@ import (
 )
 
 type ContextLogger struct {
-	logger  *Logger
+	logger  *AsteriaLogger
 	context Fields
+}
+
+// WithFields 带有上下文信息的日志输出
+func (logger *ContextLogger) WithFields(c Fields) Logger {
+	c2 := make(Fields)
+	for k, v := range logger.context {
+		c2[k] = v
+	}
+	for k, v := range c {
+		c2[k] = v
+	}
+
+	return &ContextLogger{
+		logger:  logger.logger,
+		context: c2,
+	}
 }
 
 func (logger *ContextLogger) Emergency(v ...interface{}) {

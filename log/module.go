@@ -20,7 +20,7 @@ var loggers = make(Loggers)
 var moduleLock sync.RWMutex
 
 // Loggers is a map holds all loggers
-type Loggers map[string]*Logger
+type Loggers map[string]*AsteriaLogger
 
 // All return all loggers
 func All() Loggers {
@@ -99,8 +99,8 @@ func (loggers Loggers) LogWriter(w writer.Writer) {
 	defaultLogConfig.LogWriter = w
 }
 
-// Logger 日志对象
-type Logger struct {
+// AsteriaLogger 日志对象
+type AsteriaLogger struct {
 	moduleName        string
 	level             level.Level
 	formatter         formatter.Formatter
@@ -115,7 +115,7 @@ type Logger struct {
 }
 
 // AddFilter append a filter to logger
-func (module *Logger) AddFilter(f ...FilterChain) {
+func (module *AsteriaLogger) AddFilter(f ...FilterChain) {
 	module.lock.Lock()
 	defer module.lock.Unlock()
 
@@ -123,7 +123,7 @@ func (module *Logger) AddFilter(f ...FilterChain) {
 }
 
 // Filters return all filters
-func (module *Logger) Filters() []FilterChain {
+func (module *AsteriaLogger) Filters() []FilterChain {
 	module.lock.RLock()
 	defer module.lock.RUnlock()
 
@@ -241,7 +241,7 @@ func GlobalFields(f func(c event.Fields)) {
 }
 
 // Module 获取指定模块的日志输出对象
-func Module(moduleName string) *Logger {
+func Module(moduleName string) *AsteriaLogger {
 	moduleLock.Lock()
 	defer moduleLock.Unlock()
 
@@ -249,7 +249,7 @@ func Module(moduleName string) *Logger {
 		return logger
 	}
 
-	logger := &Logger{
+	logger := &AsteriaLogger{
 		moduleName:        moduleName,
 		formatter:         defaultLogConfig.LogFormatter,
 		writer:            defaultLogConfig.LogWriter,
@@ -266,7 +266,7 @@ func Module(moduleName string) *Logger {
 }
 
 // Location set time location for module
-func (module *Logger) Location(loc *time.Location) *Logger {
+func (module *AsteriaLogger) Location(loc *time.Location) *AsteriaLogger {
 	module.lock.Lock()
 	defer module.lock.Unlock()
 
@@ -276,7 +276,7 @@ func (module *Logger) Location(loc *time.Location) *Logger {
 }
 
 // WithFileLine set whether output file & Line
-func (module *Logger) WithFileLine(enable bool) *Logger {
+func (module *AsteriaLogger) WithFileLine(enable bool) *AsteriaLogger {
 	module.lock.Lock()
 	defer module.lock.Unlock()
 
@@ -285,7 +285,7 @@ func (module *Logger) WithFileLine(enable bool) *Logger {
 }
 
 // DynamicModuleName set whether enable dynamic module name generate
-func (module *Logger) DynamicModuleName(enable bool) *Logger {
+func (module *AsteriaLogger) DynamicModuleName(enable bool) *AsteriaLogger {
 	module.lock.Lock()
 	defer module.lock.Unlock()
 
@@ -294,7 +294,7 @@ func (module *Logger) DynamicModuleName(enable bool) *Logger {
 }
 
 // GlobalFields set global fields
-func (module *Logger) GlobalFields(f func(c event.Fields)) *Logger {
+func (module *AsteriaLogger) GlobalFields(f func(c event.Fields)) *AsteriaLogger {
 	module.lock.Lock()
 	defer module.lock.Unlock()
 
@@ -303,7 +303,7 @@ func (module *Logger) GlobalFields(f func(c event.Fields)) *Logger {
 	return module
 }
 
-func (module *Logger) Output(callDepth int, le level.Level, userContext Fields, v ...interface{}) {
+func (module *AsteriaLogger) Output(callDepth int, le level.Level, userContext Fields, v ...interface{}) {
 	if le > module.level {
 		return
 	}
@@ -364,12 +364,12 @@ func (module *Logger) Output(callDepth int, le level.Level, userContext Fields, 
 }
 
 // Default 获取默认的模块日志
-func Default() *Logger {
+func Default() *AsteriaLogger {
 	return Module("main")
 }
 
 // LogLevel 设置日志输出级别
-func (module *Logger) LogLevel(le level.Level) *Logger {
+func (module *AsteriaLogger) LogLevel(le level.Level) *AsteriaLogger {
 	module.lock.Lock()
 	defer module.lock.Unlock()
 
@@ -379,7 +379,7 @@ func (module *Logger) LogLevel(le level.Level) *Logger {
 }
 
 // Formatter 设置日志格式化器
-func (module *Logger) Formatter(f formatter.Formatter) *Logger {
+func (module *AsteriaLogger) Formatter(f formatter.Formatter) *AsteriaLogger {
 	module.lock.Lock()
 	defer module.lock.Unlock()
 
@@ -387,7 +387,7 @@ func (module *Logger) Formatter(f formatter.Formatter) *Logger {
 	return module
 }
 
-func (module *Logger) getFormatter() formatter.Formatter {
+func (module *AsteriaLogger) getFormatter() formatter.Formatter {
 	module.lock.RLock()
 	defer module.lock.RUnlock()
 
@@ -395,7 +395,7 @@ func (module *Logger) getFormatter() formatter.Formatter {
 }
 
 // Writer 设置日志输出器
-func (module *Logger) Writer(w writer.Writer) *Logger {
+func (module *AsteriaLogger) Writer(w writer.Writer) *AsteriaLogger {
 	module.lock.Lock()
 	defer module.lock.Unlock()
 
@@ -403,7 +403,7 @@ func (module *Logger) Writer(w writer.Writer) *Logger {
 	return module
 }
 
-func (module *Logger) getWriter() writer.Writer {
+func (module *AsteriaLogger) getWriter() writer.Writer {
 	module.lock.RLock()
 	defer module.lock.RUnlock()
 
@@ -411,87 +411,87 @@ func (module *Logger) getWriter() writer.Writer {
 }
 
 // ReOpen reopen a log file
-func (module *Logger) ReOpen() error {
+func (module *AsteriaLogger) ReOpen() error {
 	return module.getWriter().ReOpen()
 }
 
 // Close close a log LogWriter
-func (module *Logger) Close() error {
+func (module *AsteriaLogger) Close() error {
 	return module.getWriter().Close()
 }
 
 // WithFields 带有上下文信息的日志输出
-func (module *Logger) WithFields(c Fields) *ContextLogger {
+func (module *AsteriaLogger) WithFields(c Fields) Logger {
 	return &ContextLogger{
 		logger:  module,
 		context: c,
 	}
 }
 
-func (module *Logger) Emergency(v ...interface{}) {
+func (module *AsteriaLogger) Emergency(v ...interface{}) {
 	module.Output(3, level.Emergency, nil, v...)
 }
 
-func (module *Logger) Alert(v ...interface{}) {
+func (module *AsteriaLogger) Alert(v ...interface{}) {
 	module.Output(3, level.Alert, nil, v...)
 }
 
-func (module *Logger) Critical(v ...interface{}) {
+func (module *AsteriaLogger) Critical(v ...interface{}) {
 	module.Output(3, level.Critical, nil, v...)
 }
 
-func (module *Logger) Error(v ...interface{}) {
+func (module *AsteriaLogger) Error(v ...interface{}) {
 	module.Output(3, level.Error, nil, v...)
 }
 
-func (module *Logger) Warning(v ...interface{}) {
+func (module *AsteriaLogger) Warning(v ...interface{}) {
 	module.Output(3, level.Warning, nil, v...)
 }
 
-func (module *Logger) Notice(v ...interface{}) {
+func (module *AsteriaLogger) Notice(v ...interface{}) {
 	module.Output(3, level.Notice, nil, v...)
 }
 
-func (module *Logger) Info(v ...interface{}) {
+func (module *AsteriaLogger) Info(v ...interface{}) {
 	module.Output(3, level.Info, nil, v...)
 }
 
-func (module *Logger) Debug(v ...interface{}) {
+func (module *AsteriaLogger) Debug(v ...interface{}) {
 	module.Output(3, level.Debug, nil, v...)
 }
 
-func (module *Logger) Emergencyf(format string, v ...interface{}) {
+func (module *AsteriaLogger) Emergencyf(format string, v ...interface{}) {
 	module.Output(3, level.Emergency, nil, fmt.Sprintf(format, v...))
 }
 
-func (module *Logger) Alertf(format string, v ...interface{}) {
+func (module *AsteriaLogger) Alertf(format string, v ...interface{}) {
 	module.Output(3, level.Alert, nil, fmt.Sprintf(format, v...))
 }
 
-func (module *Logger) Criticalf(format string, v ...interface{}) {
+func (module *AsteriaLogger) Criticalf(format string, v ...interface{}) {
 	module.Output(3, level.Critical, nil, fmt.Sprintf(format, v...))
 }
 
-func (module *Logger) Errorf(format string, v ...interface{}) {
+func (module *AsteriaLogger) Errorf(format string, v ...interface{}) {
 	module.Output(3, level.Error, nil, fmt.Sprintf(format, v...))
 }
 
-func (module *Logger) Warningf(format string, v ...interface{}) {
+func (module *AsteriaLogger) Warningf(format string, v ...interface{}) {
 	module.Output(3, level.Warning, nil, fmt.Sprintf(format, v...))
 }
 
-func (module *Logger) Noticef(format string, v ...interface{}) {
+func (module *AsteriaLogger) Noticef(format string, v ...interface{}) {
 	module.Output(3, level.Notice, nil, fmt.Sprintf(format, v...))
 }
 
-func (module *Logger) Infof(format string, v ...interface{}) {
+func (module *AsteriaLogger) Infof(format string, v ...interface{}) {
 	module.Output(3, level.Info, nil, fmt.Sprintf(format, v...))
 }
 
-func (module *Logger) Debugf(format string, v ...interface{}) {
+func (module *AsteriaLogger) Debugf(format string, v ...interface{}) {
 	module.Output(3, level.Debug, nil, fmt.Sprintf(format, v...))
 }
 
-func (module *Logger) Print(v ...interface{}) {
+func (module *AsteriaLogger) Print(v ...interface{}) {
 	module.Output(3, level.Debug, nil, v...)
 }

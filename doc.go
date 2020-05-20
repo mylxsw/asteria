@@ -19,3 +19,4 @@ Package asteria is a logging library for go with module support.
 
 */
 package asteria
+
