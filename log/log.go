@@ -63,6 +63,10 @@ func WithFields(fields Fields) Logger {
 	return Default().WithFields(fields)
 }
 
+func With(data interface{}) Logger {
+	return Default().With(data)
+}
+
 func Emergency(v ...interface{}) {
 	Default().Output(3, level.Emergency, nil, v...)
 }

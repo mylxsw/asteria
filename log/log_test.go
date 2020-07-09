@@ -262,3 +262,13 @@ func TestLogger_Formatter(t *testing.T) {
 	assert.Regexp(t, regexp.MustCompile("^{.*}$"), mockWriter.LastMessage)
 }
 
+func TestLoggers_WithFields(t *testing.T) {
+	log.Reset()
+
+	mockWriter := &MockWriter{}
+	log.SetWriter(mockWriter)
+	log.SetFormatter(formatter.NewJSONFormatter())
+
+	log.With(123).Debugf("hello, world")
+	assert.Regexp(t, regexp.MustCompile("\"data\":123"), mockWriter.LastMessage)
+}

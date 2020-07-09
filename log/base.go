@@ -2,6 +2,7 @@ package log
 
 type Logger interface {
 	WithFields(c Fields) Logger
+	With(data interface{}) Logger
 	Emergency(v ...interface{})
 	Alert(v ...interface{})
 	Critical(v ...interface{})
