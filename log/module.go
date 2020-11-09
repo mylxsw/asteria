@@ -114,6 +114,38 @@ type AsteriaLogger struct {
 	lock sync.RWMutex
 }
 
+func (module *AsteriaLogger) DebugEnabled() bool {
+	return level.Debug <= module.level
+}
+
+func (module *AsteriaLogger) InfoEnabled() bool {
+	return level.Info <= module.level
+}
+
+func (module *AsteriaLogger) NoticeEnabled() bool {
+	return level.Notice <= module.level
+}
+
+func (module *AsteriaLogger) WarningEnabled() bool {
+	return level.Warning <= module.level
+}
+
+func (module *AsteriaLogger) ErrorEnabled() bool {
+	return level.Error <= module.level
+}
+
+func (module *AsteriaLogger) CriticalEnabled() bool {
+	return level.Critical <= module.level
+}
+
+func (module *AsteriaLogger) AlertEnabled() bool {
+	return level.Alert <= module.level
+}
+
+func (module *AsteriaLogger) EmergencyEnabled() bool {
+	return level.Emergency <= module.level
+}
+
 // AddFilter append a filter to logger
 func (module *AsteriaLogger) AddFilter(f ...FilterChain) {
 	module.lock.Lock()

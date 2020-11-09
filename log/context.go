@@ -11,6 +11,38 @@ type ContextLogger struct {
 	context Fields
 }
 
+func (logger *ContextLogger) DebugEnabled() bool {
+	return logger.logger.DebugEnabled()
+}
+
+func (logger *ContextLogger) InfoEnabled() bool {
+	return logger.logger.InfoEnabled()
+}
+
+func (logger *ContextLogger) NoticeEnabled() bool {
+	return logger.logger.NoticeEnabled()
+}
+
+func (logger *ContextLogger) WarningEnabled() bool {
+	return logger.logger.WarningEnabled()
+}
+
+func (logger *ContextLogger) ErrorEnabled() bool {
+	return logger.logger.ErrorEnabled()
+}
+
+func (logger *ContextLogger) CriticalEnabled() bool {
+	return logger.logger.CriticalEnabled()
+}
+
+func (logger *ContextLogger) AlertEnabled() bool {
+	return logger.logger.AlertEnabled()
+}
+
+func (logger *ContextLogger) EmergencyEnabled() bool {
+	return logger.logger.EmergencyEnabled()
+}
+
 func (logger *ContextLogger) With(data interface{}) Logger {
 	return logger.WithFields(Fields{
 		"data": data,

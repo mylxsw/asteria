@@ -423,3 +423,30 @@ func TestLogger_DynamicModuleName(t *testing.T) {
 	log.Module("test").Debug("Hello")
 	assert.Equal(t, "test", jsoniter.Get([]byte(mockWriter.LastMessage), "module").ToString())
 }
+
+func TestLoggers_LogLevel(t *testing.T) {
+	log.Reset()
+
+	var cases = map[level.Level][]int{
+		level.Debug:     {1, 1, 1, 1, 1, 1, 1, 1},
+		level.Info:      {0, 1, 1, 1, 1, 1, 1, 1},
+		level.Notice:    {0, 0, 1, 1, 1, 1, 1, 1},
+		level.Warning:   {0, 0, 0, 1, 1, 1, 1, 1},
+		level.Error:     {0, 0, 0, 0, 1, 1, 1, 1},
+		level.Critical:  {0, 0, 0, 0, 0, 1, 1, 1},
+		level.Alert:     {0, 0, 0, 0, 0, 0, 1, 1},
+		level.Emergency: {0, 0, 0, 0, 0, 0, 0, 1},
+	}
+
+	for le, cas := range cases {
+		log.SetLevel(le)
+		assert.Equal(t, cas[0] == 1, log.DebugEnabled(), "current=%s, target=DEBUG, enabled=%v", le.GetLevelName(), log.DebugEnabled())
+		assert.Equal(t, cas[1] == 1, log.InfoEnabled(), "current=%s, target=INFO, enabled=%v", le.GetLevelName(), log.InfoEnabled())
+		assert.Equal(t, cas[2] == 1, log.NoticeEnabled(), "current=%s, target=NOTICE, enabled=%v", le.GetLevelName(), log.NoticeEnabled())
+		assert.Equal(t, cas[3] == 1, log.WarningEnabled(), "current=%s, target=WARNING, enabled=%v", le.GetLevelName(), log.WarningEnabled())
+		assert.Equal(t, cas[4] == 1, log.ErrorEnabled(), "current=%s, target=ERROR, enabled=%v", le.GetLevelName(), log.ErrorEnabled())
+		assert.Equal(t, cas[5] == 1, log.CriticalEnabled(), "current=%s, target=CRITICAL, enabled=%v", le.GetLevelName(), log.CriticalEnabled())
+		assert.Equal(t, cas[6] == 1, log.AlertEnabled(), "current=%s, target=ALERT, enabled=%v", le.GetLevelName(), log.AlertEnabled())
+		assert.Equal(t, cas[7] == 1, log.EmergencyEnabled(), "current=%s, target=EMERGENCY, enabled=%v", le.GetLevelName(), log.EmergencyEnabled())
+	}
+}

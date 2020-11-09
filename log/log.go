@@ -130,3 +130,35 @@ func Infof(format string, v ...interface{}) {
 func Debugf(format string, v ...interface{}) {
 	Default().Output(3, level.Debug, nil, fmt.Sprintf(format, v...))
 }
+
+func DebugEnabled() bool {
+	return Default().DebugEnabled()
+}
+
+func InfoEnabled() bool {
+	return Default().InfoEnabled()
+}
+
+func NoticeEnabled() bool {
+	return Default().NoticeEnabled()
+}
+
+func WarningEnabled() bool {
+	return Default().WarningEnabled()
+}
+
+func ErrorEnabled() bool {
+	return Default().ErrorEnabled()
+}
+
+func AlertEnabled() bool {
+	return Default().AlertEnabled()
+}
+
+func CriticalEnabled() bool {
+	return Default().CriticalEnabled()
+}
+
+func EmergencyEnabled() bool {
+	return Default().EmergencyEnabled()
+}

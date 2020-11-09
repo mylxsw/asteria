@@ -57,13 +57,12 @@ func TestDefaultFormatter_ColorfulFormat(t *testing.T) {
 	now := time.Now()
 
 	var testcases = map[string]event.Event{
-		fmt.Sprintf(`[%s] ` + "\x1b[97;101m[ALER]\x1b[0m test                 Hello, world \x1b[90m{\"uid\":134,\"#abc\":\"def\"}\x1b[0m", now.Format(time.RFC3339)): {
+		fmt.Sprintf(`[%s] ` + "\x1b[97;101m[ALER]\x1b[0m test                 Hello, world \x1b[90m{\"#abc\":\"def\"}\x1b[0m", now.Format(time.RFC3339)): {
 			Time:   now,
 			Module: "test",
 			Level:  level.Alert,
 			Fields: event.Fields{
 				GlobalFields: map[string]interface{}{"abc": "def",},
-				CustomFields: map[string]interface{}{"uid": 134,},
 			},
 			Messages: []interface{}{"Hello, world"},
 		},

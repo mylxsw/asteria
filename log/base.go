@@ -19,4 +19,13 @@ type Logger interface {
 	Noticef(format string, v ...interface{})
 	Infof(format string, v ...interface{})
 	Debugf(format string, v ...interface{})
+
+	DebugEnabled() bool
+	InfoEnabled() bool
+	NoticeEnabled() bool
+	WarningEnabled() bool
+	ErrorEnabled() bool
+	CriticalEnabled() bool
+	AlertEnabled() bool
+	EmergencyEnabled() bool
 }
