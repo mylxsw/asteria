@@ -111,7 +111,7 @@ func NewDefaultRotatingFileWriter(fn RotatingFileFn) *RotatingFileWriter {
 }
 
 func NewRotatingFileWriter(flag int, perm os.FileMode, fn RotatingFileFn) *RotatingFileWriter {
-	return &RotatingFileWriter{fn: fn, flag: flag, perm: perm, openedFiles: make(map[string]*FileWriter),}
+	return &RotatingFileWriter{fn: fn, flag: flag, perm: perm, openedFiles: make(map[string]*FileWriter)}
 }
 
 func (writer *RotatingFileWriter) Write(le level.Level, module string, message string) error {
@@ -141,11 +141,7 @@ func (writer *RotatingFileWriter) GC(inactiveDuration time.Duration) {
 	deleteFiles := make([]string, 0)
 	for filename, f := range writer.openedFiles {
 		stat, err := f.GetFileStat()
-		if err != nil {
-			continue
-		}
-
-		if time.Now().After(stat.ModTime().Add(inactiveDuration)) {
+		if err != nil || time.Now().After(stat.ModTime().Add(inactiveDuration)) {
 			deleteFiles = append(deleteFiles, filename)
 		}
 	}
