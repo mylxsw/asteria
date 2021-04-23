@@ -43,7 +43,7 @@ func TestRotatingFileWriter_Write(t *testing.T) {
 
 	fileNo := fileNo1
 
-	fw := writer.NewDefaultRotatingFileWriter(func(le level.Level, module string) string {
+	fw := writer.NewDefaultRotatingFileWriter(context.TODO(), func(le level.Level, module string) string {
 		return fileNo
 	})
 
@@ -79,7 +79,7 @@ func TestRotatingFileWriter_Write(t *testing.T) {
 
 func TestRotatingFileWriter_ReOpen(t *testing.T) {
 	filename := "test_rotating_file.log"
-	fw := writer.NewDefaultRotatingFileWriter(func(le level.Level, module string) string {
+	fw := writer.NewDefaultRotatingFileWriter(context.TODO(), func(le level.Level, module string) string {
 		return filename
 	})
 
@@ -97,7 +97,7 @@ func TestRotatingFileWriter_ReOpen(t *testing.T) {
 }
 
 func TestRotatingFileWriter_GC(t *testing.T) {
-	fw := writer.NewDefaultRotatingFileWriter(func(le level.Level, module string) string {
+	fw := writer.NewDefaultRotatingFileWriter(context.TODO(), func(le level.Level, module string) string {
 		return fmt.Sprintf("%s-%s.log", module, le.GetLevelName())
 	})
 
@@ -123,11 +123,15 @@ func TestRotatingFileWriter_GC(t *testing.T) {
 }
 
 func TestRotatingFileWriter_AutoGC(t *testing.T) {
-	fw := writer.NewDefaultRotatingFileWriter(func(le level.Level, module string) string {
-		return fmt.Sprintf("%s-%s.log", module, le.GetLevelName())
-	})
-
-	fw.AutoGC(context.Background(), 1*time.Millisecond)
+	fw := writer.NewRotatingFileWriter(
+		context.TODO(),
+		1*time.Millisecond,
+		os.O_CREATE|os.O_APPEND|os.O_WRONLY,
+		0666,
+		func(le level.Level, module string) string {
+			return fmt.Sprintf("%s-%s.log", module, le.GetLevelName())
+		},
+	)
 
 	defer func() {
 		_ = os.Remove("test1-DEBUG.log")

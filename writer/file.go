@@ -106,19 +106,21 @@ type RotatingFileWriter struct {
 	lock sync.Mutex
 }
 
-func NewDefaultRotatingFileWriter(fn RotatingFileFn) *RotatingFileWriter {
-	return NewRotatingFileWriter(os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666, fn)
+func NewDefaultRotatingFileWriter(ctx context.Context, fn RotatingFileFn) *RotatingFileWriter {
+	return NewRotatingFileWriter(ctx, 10*time.Minute, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666, fn)
 }
 
-func NewRotatingFileWriter(flag int, perm os.FileMode, fn RotatingFileFn) *RotatingFileWriter {
-	return &RotatingFileWriter{fn: fn, flag: flag, perm: perm, openedFiles: make(map[string]*FileWriter)}
+func NewRotatingFileWriter(ctx context.Context, gcDuration time.Duration, flag int, perm os.FileMode, fn RotatingFileFn) *RotatingFileWriter {
+	wr := &RotatingFileWriter{fn: fn, flag: flag, perm: perm, openedFiles: make(map[string]*FileWriter)}
+	wr.autoGC(ctx, gcDuration)
+	return wr
 }
 
 func (writer *RotatingFileWriter) Write(le level.Level, module string, message string) error {
 	return writer.getWriter(writer.fn(le, module)).Write(le, module, message)
 }
 
-func (writer *RotatingFileWriter) AutoGC(ctx context.Context, interval time.Duration) {
+func (writer *RotatingFileWriter) autoGC(ctx context.Context, interval time.Duration) {
 	go func() {
 		ticker := time.NewTicker(interval)
 		defer ticker.Stop()
