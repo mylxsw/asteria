@@ -270,5 +270,5 @@ func TestLoggers_WithFields(t *testing.T) {
 	log.SetFormatter(formatter.NewJSONFormatter())
 
 	log.With(123).Debugf("hello, world")
-	assert.Regexp(t, regexp.MustCompile("\"data\":123"), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile("\"@\":123"), mockWriter.LastMessage)
 }

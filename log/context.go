@@ -45,7 +45,7 @@ func (logger *ContextLogger) EmergencyEnabled() bool {
 
 func (logger *ContextLogger) With(data interface{}) Logger {
 	return logger.WithFields(Fields{
-		"data": data,
+		"@": data,
 	})
 }
 

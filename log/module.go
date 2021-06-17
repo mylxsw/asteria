@@ -462,7 +462,7 @@ func (module *AsteriaLogger) WithFields(c Fields) Logger {
 
 func (module *AsteriaLogger) With(data interface{}) Logger {
 	return module.WithFields(Fields{
-		"data": data,
+		"@": data,
 	})
 }
 
