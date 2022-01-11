@@ -13,6 +13,7 @@ func init() {
 }
 
 type Fields map[string]interface{}
+type M map[string]interface{}
 
 // ReOpenAll reopen all logger
 func ReOpenAll() map[string]error {
@@ -57,6 +58,10 @@ func SetFormatter(f formatter.Formatter) *AsteriaLogger {
 // Writer 设置日志输出器
 func SetWriter(w writer.Writer) *AsteriaLogger {
 	return Default().Writer(w)
+}
+
+func F(fields M) Logger {
+	return Default().F(fields)
 }
 
 func WithFields(fields Fields) Logger {

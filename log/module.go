@@ -452,6 +452,10 @@ func (module *AsteriaLogger) Close() error {
 	return module.getWriter().Close()
 }
 
+func (module *AsteriaLogger) F(fields M) Logger {
+	return module.WithFields(Fields(fields))
+}
+
 // WithFields 带有上下文信息的日志输出
 func (module *AsteriaLogger) WithFields(c Fields) Logger {
 	return &ContextLogger{

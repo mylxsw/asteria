@@ -49,6 +49,10 @@ func (logger *ContextLogger) With(data interface{}) Logger {
 	})
 }
 
+func (logger *ContextLogger) F(fields M) Logger {
+	return logger.WithFields(Fields(fields))
+}
+
 // WithFields 带有上下文信息的日志输出
 func (logger *ContextLogger) WithFields(c Fields) Logger {
 	c2 := make(Fields)

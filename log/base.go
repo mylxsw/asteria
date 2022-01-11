@@ -1,6 +1,7 @@
 package log
 
 type Logger interface {
+	F(fields M) Logger
 	WithFields(c Fields) Logger
 	With(data interface{}) Logger
 	Emergency(v ...interface{})

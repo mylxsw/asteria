@@ -18,6 +18,10 @@ The most straightforward way to write a log
         "user_id":  123,
         "username": "Tom",
     }).Warningf("The gentleman is frank, the villain is often jealous.")
+    log.F(log.M{
+        "user_id":  123,
+        "username": "Tom",
+    }).Warningf("The gentleman is frank, the villain is often jealous.")
 
 Log according to different modules
 
@@ -26,6 +30,10 @@ Log according to different modules
     logger.Debug("Drizzle breeze shore, dangerous night boat")
     logger.Error("On the moon, the willow head, after the evening")
     logger.WithFields(log.Fields{
+        "user_id":  123,
+        "username": "Tom",
+    }).Warningf("The gentleman is frank, the villain is often jealous.")
+    logger.F(log.M{
         "user_id":  123,
         "username": "Tom",
     }).Warningf("The gentleman is frank, the villain is often jealous.")
@@ -175,16 +183,9 @@ The default output mode is **standard output**, no need to make any settings, of
 
 If you want to rotate the logs according to your own rules, such as generating new log files every day, you can use `RotatingFileWriter`
 
-    fw := writer.NewDefaultRotatingFileWriter(func(le level.Level, module string) string {
+    fw := writer.NewDefaultRotatingFileWriter(context.TODO(), func(le level.Level, module string) string {
         return fmt.Sprintf("asteria.%s.log", time.Now().Format("20060102"))
     })
-    
-    // you can call GC to close unused files every time you wanted
-    fw.GC(1 * time.Hour)
-    // Or you can call AutoGC to start auto gc support
-    // asteria will call GC function every one hour for you automatically
-    fw.AutoGC(context.Background(), time.Hour)
-    
     log.Writer(fw)
 
 
