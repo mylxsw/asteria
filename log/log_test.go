@@ -2,6 +2,7 @@ package log_test
 
 import (
 	"fmt"
+	"github.com/mylxsw/asteria/filter"
 	"regexp"
 	"testing"
 
@@ -44,15 +45,15 @@ func TestGlobalFilters(t *testing.T) {
 	mockWriter := &MockWriter{}
 
 	log.DefaultLogWriter(mockWriter)
-	log.AddGlobalFilter(func(filter log.Filter) log.Filter {
+	log.AddGlobalFilter(func(filter filter.Filter) filter.Filter {
 		return func(f event.Event) {
 			f.Fields.CustomFields["user_id"] = 123
 			filter(f)
 		}
 	})
 
-	log.Debug("Hello")
-	assert.Equal(t, level.Debug, mockWriter.LastLevel)
+	log.Emergency("Hello")
+	assert.Equal(t, level.Emergency, mockWriter.LastLevel)
 	assert.Regexp(t, regexp.MustCompile("^\\[.*?\\] .*?[DEBUG].*?Hello.*?\"user_id\":123"), mockWriter.LastMessage)
 }
 
@@ -63,7 +64,7 @@ func TestFilters(t *testing.T) {
 	log.DefaultLogWriter(mockWriter)
 	log.DefaultLogFormatter(formatter.NewDefaultFormatter(false))
 
-	log.Module("test").AddFilter(func(filter log.Filter) log.Filter {
+	log.Module("test").AddFilter(func(filter filter.Filter) filter.Filter {
 		return func(f event.Event) {
 			f.Fields.CustomFields["user_id"] = 123
 			filter(f)

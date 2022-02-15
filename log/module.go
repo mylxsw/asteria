@@ -2,6 +2,7 @@ package log
 
 import (
 	"fmt"
+	"github.com/mylxsw/asteria/filter"
 	"strings"
 	"sync"
 	"time"
@@ -12,9 +13,6 @@ import (
 	"github.com/mylxsw/asteria/misc"
 	"github.com/mylxsw/asteria/writer"
 )
-
-type Filter func(f event.Event)
-type FilterChain func(filter Filter) Filter
 
 var loggers = make(Loggers)
 var moduleLock sync.RWMutex
@@ -109,7 +107,7 @@ type AsteriaLogger struct {
 	dynamicModuleName bool
 	fileLine          bool
 	globalContext     func(c event.Fields)
-	filters           []FilterChain
+	filters           []filter.Chain
 
 	lock sync.RWMutex
 }
@@ -147,7 +145,7 @@ func (module *AsteriaLogger) EmergencyEnabled() bool {
 }
 
 // AddFilter append a filter to logger
-func (module *AsteriaLogger) AddFilter(f ...FilterChain) {
+func (module *AsteriaLogger) AddFilter(f ...filter.Chain) {
 	module.lock.Lock()
 	defer module.lock.Unlock()
 
@@ -155,7 +153,7 @@ func (module *AsteriaLogger) AddFilter(f ...FilterChain) {
 }
 
 // Filters return all filters
-func (module *AsteriaLogger) Filters() []FilterChain {
+func (module *AsteriaLogger) Filters() []filter.Chain {
 	module.lock.RLock()
 	defer module.lock.RUnlock()
 
@@ -163,7 +161,7 @@ func (module *AsteriaLogger) Filters() []FilterChain {
 }
 
 // AddGlobalFilter add a global filter
-func AddGlobalFilter(f ...FilterChain) {
+func AddGlobalFilter(f ...filter.Chain) {
 	moduleLock.Lock()
 	defer moduleLock.Unlock()
 
@@ -171,7 +169,7 @@ func AddGlobalFilter(f ...FilterChain) {
 }
 
 // GlobalFilters return all global filters
-func GlobalFilters() []FilterChain {
+func GlobalFilters() []filter.Chain {
 	moduleLock.RLock()
 	defer moduleLock.RUnlock()
 
@@ -187,7 +185,7 @@ type DefaultConfig struct {
 	WithFileLine      bool
 	DynamicModuleName bool
 	GlobalFields      func(c event.Fields)
-	GlobalFilters     []FilterChain
+	GlobalFilters     []filter.Chain
 }
 
 // 默认配置信息
@@ -205,7 +203,7 @@ func Reset() {
 		TimeLocation:      time.Local,
 		WithFileLine:      false,
 		DynamicModuleName: false,
-		GlobalFilters:     make([]FilterChain, 0),
+		GlobalFilters:     make([]filter.Chain, 0),
 	}
 
 	loggers = make(Loggers)
@@ -378,7 +376,7 @@ func (module *AsteriaLogger) Output(callDepth int, le level.Level, userContext F
 		Messages: v,
 	}
 
-	var chain Filter = func(f event.Event) {
+	var chain filter.Filter = func(f event.Event) {
 		message := module.getFormatter().Format(f)
 		if err := module.getWriter().Write(le, f.Module, message); err != nil {
 			panic(fmt.Sprintf("can not write to output: %s", err))
