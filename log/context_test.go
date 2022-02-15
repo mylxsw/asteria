@@ -20,27 +20,27 @@ func TestContextLogger(t *testing.T) {
 
 	log.F(log.M{"user_id": 123}).Emergency("hello")
 	assert.Equal(t, level.Emergency, mockWriter.LastLevel)
-	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {\"user_id\":123}", level.Emergency.GetLevelName())), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {.*?\"user_id\":123.*?}", level.Emergency.GetLevelName())), mockWriter.LastMessage)
 
 	log.F(log.M{"user_id": 123}).Alert("hello")
 	assert.Equal(t, level.Alert, mockWriter.LastLevel)
-	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {\"user_id\":123}", level.Alert.GetLevelName())), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {.*?\"user_id\":123.*?}", level.Alert.GetLevelName())), mockWriter.LastMessage)
 
 	log.F(log.M{"user_id": 123}).Critical("hello")
 	assert.Equal(t, level.Critical, mockWriter.LastLevel)
-	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {\"user_id\":123}", level.Critical.GetLevelName())), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {.*?\"user_id\":123.*?}", level.Critical.GetLevelName())), mockWriter.LastMessage)
 
 	log.F(log.M{"user_id": 123}).Error("hello")
 	assert.Equal(t, level.Error, mockWriter.LastLevel)
-	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {\"user_id\":123}", level.Error.GetLevelName())), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {.*?\"user_id\":123.*?}", level.Error.GetLevelName())), mockWriter.LastMessage)
 
 	log.F(log.M{"user_id": 123}).Warning("hello")
 	assert.Equal(t, level.Warning, mockWriter.LastLevel)
-	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {\"user_id\":123}", level.Warning.GetLevelName())), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {.*?\"user_id\":123.*?}", level.Warning.GetLevelName())), mockWriter.LastMessage)
 
 	log.F(log.M{"user_id": 123}).Notice("hello")
 	assert.Equal(t, level.Notice, mockWriter.LastLevel)
-	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {\"user_id\":123}", level.Notice.GetLevelName())), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {.*?\"user_id\":123.*?}", level.Notice.GetLevelName())), mockWriter.LastMessage)
 
 	log.F(log.M{"user_id": 123}).Info("hello")
 	assert.Equal(t, level.Info, mockWriter.LastLevel)
@@ -48,23 +48,23 @@ func TestContextLogger(t *testing.T) {
 
 	log.F(log.M{"user_id": 123}).Debug("hello")
 	assert.Equal(t, level.Debug, mockWriter.LastLevel)
-	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {\"user_id\":123}", level.Debug.GetLevelName())), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {.*?\"user_id\":123.*?}", level.Debug.GetLevelName())), mockWriter.LastMessage)
 
 	log.F(log.M{"user_id": 123}).Emergencyf("hello %s", "world")
 	assert.Equal(t, level.Emergency, mockWriter.LastLevel)
-	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {\"user_id\":123}", level.Emergency.GetLevelName())), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {.*?\"user_id\":123.*?}", level.Emergency.GetLevelName())), mockWriter.LastMessage)
 
 	log.F(log.M{"user_id": 123}).Alertf("hello %s", "world")
 	assert.Equal(t, level.Alert, mockWriter.LastLevel)
-	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {\"user_id\":123}", level.Alert.GetLevelName())), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {.*?\"user_id\":123.*?}", level.Alert.GetLevelName())), mockWriter.LastMessage)
 
 	log.F(log.M{"user_id": 123}).Criticalf("hello %s", "world")
 	assert.Equal(t, level.Critical, mockWriter.LastLevel)
-	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {\"user_id\":123}", level.Critical.GetLevelName())), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {.*?\"user_id\":123.*?}", level.Critical.GetLevelName())), mockWriter.LastMessage)
 
 	log.F(log.M{"user_id": 123}).Errorf("hello %s", "world")
 	assert.Equal(t, level.Error, mockWriter.LastLevel)
-	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {\"user_id\":123}", level.Error.GetLevelName())), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {.*?\"user_id\":123.*?}", level.Error.GetLevelName())), mockWriter.LastMessage)
 
 	log.F(log.M{"user_id": 123}).Warningf("hello %s", "world")
 	assert.Equal(t, level.Warning, mockWriter.LastLevel)
@@ -80,6 +80,6 @@ func TestContextLogger(t *testing.T) {
 
 	log.F(log.M{"user_id": 123}).Debugf("hello %s", "world")
 	assert.Equal(t, level.Debug, mockWriter.LastLevel)
-	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {\"user_id\":123}", level.Debug.GetLevelName())), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {.*?\"user_id\":123.*?}", level.Debug.GetLevelName())), mockWriter.LastMessage)
 
 }

@@ -67,6 +67,11 @@ func TestDefaultWithFileLine(t *testing.T) {
 	log.Default().WithFileLine(false)
 
 	log.Debug("hello")
+	assert.Regexp(t, regexp.MustCompile(`"#file"`), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(`"#line"`), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(`"#package"`), mockWriter.LastMessage)
+
+	log.Info("hello")
 	assert.NotRegexp(t, regexp.MustCompile(`"#file"`), mockWriter.LastMessage)
 	assert.NotRegexp(t, regexp.MustCompile(`"#line"`), mockWriter.LastMessage)
 	assert.NotRegexp(t, regexp.MustCompile(`"#package"`), mockWriter.LastMessage)
@@ -175,6 +180,11 @@ func TestLogger_WithFileLine(t *testing.T) {
 	logger.WithFileLine(false)
 
 	logger.Debug("hello")
+	assert.Regexp(t, regexp.MustCompile(`"#file"`), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(`"#line"`), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(`"#package"`), mockWriter.LastMessage)
+
+	logger.Info("hello")
 	assert.NotRegexp(t, regexp.MustCompile(`"#file"`), mockWriter.LastMessage)
 	assert.NotRegexp(t, regexp.MustCompile(`"#line"`), mockWriter.LastMessage)
 	assert.NotRegexp(t, regexp.MustCompile(`"#package"`), mockWriter.LastMessage)
@@ -191,19 +201,19 @@ func TestModuleLogger(t *testing.T) {
 
 	logger.Emergency("hello")
 	assert.Equal(t, level.Emergency, mockWriter.LastLevel)
-	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {}", level.Emergency.GetLevelName())), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {.*?}", level.Emergency.GetLevelName())), mockWriter.LastMessage)
 
 	logger.Alert("hello")
 	assert.Equal(t, level.Alert, mockWriter.LastLevel)
-	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {}", level.Alert.GetLevelName())), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {.*?}", level.Alert.GetLevelName())), mockWriter.LastMessage)
 
 	logger.Critical("hello")
 	assert.Equal(t, level.Critical, mockWriter.LastLevel)
-	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {}", level.Critical.GetLevelName())), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {.*?}", level.Critical.GetLevelName())), mockWriter.LastMessage)
 
 	logger.Error("hello")
 	assert.Equal(t, level.Error, mockWriter.LastLevel)
-	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {}", level.Error.GetLevelName())), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {.*?}", level.Error.GetLevelName())), mockWriter.LastMessage)
 
 	logger.Warning("hello")
 	assert.Equal(t, level.Warning, mockWriter.LastLevel)
@@ -219,25 +229,25 @@ func TestModuleLogger(t *testing.T) {
 
 	logger.Debug("hello")
 	assert.Equal(t, level.Debug, mockWriter.LastLevel)
-	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {}", level.Debug.GetLevelName())), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {.*?}", level.Debug.GetLevelName())), mockWriter.LastMessage)
 
 	// logf
 
 	logger.Emergencyf("hello %s", "world")
 	assert.Equal(t, level.Emergency, mockWriter.LastLevel)
-	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {}", level.Emergency.GetLevelName())), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {.*?}", level.Emergency.GetLevelName())), mockWriter.LastMessage)
 
 	logger.Alertf("hello %s", "world")
 	assert.Equal(t, level.Alert, mockWriter.LastLevel)
-	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {}", level.Alert.GetLevelName())), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {.*?}", level.Alert.GetLevelName())), mockWriter.LastMessage)
 
 	logger.Criticalf("hello %s", "world")
 	assert.Equal(t, level.Critical, mockWriter.LastLevel)
-	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {}", level.Critical.GetLevelName())), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {.*?}", level.Critical.GetLevelName())), mockWriter.LastMessage)
 
 	logger.Errorf("hello %s", "world")
 	assert.Equal(t, level.Error, mockWriter.LastLevel)
-	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {}", level.Error.GetLevelName())), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {.*?}", level.Error.GetLevelName())), mockWriter.LastMessage)
 
 	logger.Warningf("hello %s", "world")
 	assert.Equal(t, level.Warning, mockWriter.LastLevel)
@@ -253,11 +263,11 @@ func TestModuleLogger(t *testing.T) {
 
 	logger.Debugf("hello %s", "world")
 	assert.Equal(t, level.Debug, mockWriter.LastLevel)
-	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {}", level.Debug.GetLevelName())), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {.*?}", level.Debug.GetLevelName())), mockWriter.LastMessage)
 
 	logger.Print("hello")
 	assert.Equal(t, level.Debug, mockWriter.LastLevel)
-	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {}", level.Debug.GetLevelName())), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {.*?}", level.Debug.GetLevelName())), mockWriter.LastMessage)
 }
 
 func TestAll_Writer(t *testing.T) {
@@ -300,6 +310,11 @@ func TestAll_WithFileLine(t *testing.T) {
 
 	log.All().WithFileLine(false)
 	log.Debug("hello")
+	assert.Regexp(t, regexp.MustCompile(`"#file"`), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(`"#line"`), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(`"#package"`), mockWriter.LastMessage)
+
+	log.Info("hello")
 	assert.NotRegexp(t, regexp.MustCompile(`"#file"`), mockWriter.LastMessage)
 	assert.NotRegexp(t, regexp.MustCompile(`"#line"`), mockWriter.LastMessage)
 	assert.NotRegexp(t, regexp.MustCompile(`"#package"`), mockWriter.LastMessage)
@@ -312,6 +327,10 @@ func TestAll_WithFileLine(t *testing.T) {
 
 	log.All().WithFileLine(false)
 	module1.Debug("hello")
+	assert.Regexp(t, regexp.MustCompile(`"#file"`), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(`"#line"`), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(`"#package"`), mockWriter.LastMessage)
+	module1.Info("hello")
 	assert.NotRegexp(t, regexp.MustCompile(`"#file"`), mockWriter.LastMessage)
 	assert.NotRegexp(t, regexp.MustCompile(`"#line"`), mockWriter.LastMessage)
 	assert.NotRegexp(t, regexp.MustCompile(`"#package"`), mockWriter.LastMessage)

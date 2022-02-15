@@ -28,7 +28,7 @@ func NewJSONFormatter() *JSONFormatter {
 	return &JSONFormatter{}
 }
 
-// Event 日志格式化
+// Format 日志格式化
 func (formatter JSONFormatter) Format(f event.Event) string {
 	datetime := f.Time.Format(time.RFC3339)
 

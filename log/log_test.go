@@ -122,19 +122,19 @@ func TestBasicLog(t *testing.T) {
 
 	log.Emergency("hello")
 	assert.Equal(t, level.Emergency, mockWriter.LastLevel)
-	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {}", level.Emergency.GetLevelName())), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {.*?}", level.Emergency.GetLevelName())), mockWriter.LastMessage)
 
 	log.Alert("hello")
 	assert.Equal(t, level.Alert, mockWriter.LastLevel)
-	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {}", level.Alert.GetLevelName())), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {.*?}", level.Alert.GetLevelName())), mockWriter.LastMessage)
 
 	log.Critical("hello")
 	assert.Equal(t, level.Critical, mockWriter.LastLevel)
-	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {}", level.Critical.GetLevelName())), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {.*?}", level.Critical.GetLevelName())), mockWriter.LastMessage)
 
 	log.Error("hello")
 	assert.Equal(t, level.Error, mockWriter.LastLevel)
-	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {}", level.Error.GetLevelName())), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {.*?}", level.Error.GetLevelName())), mockWriter.LastMessage)
 
 	log.Warning("hello")
 	assert.Equal(t, level.Warning, mockWriter.LastLevel)
@@ -150,7 +150,7 @@ func TestBasicLog(t *testing.T) {
 
 	log.Debug("hello")
 	assert.Equal(t, level.Debug, mockWriter.LastLevel)
-	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {}", level.Debug.GetLevelName())), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello {.*?}", level.Debug.GetLevelName())), mockWriter.LastMessage)
 }
 
 func TestBasicLogf(t *testing.T) {
@@ -162,19 +162,19 @@ func TestBasicLogf(t *testing.T) {
 
 	log.Emergencyf("hello %s", "world")
 	assert.Equal(t, level.Emergency, mockWriter.LastLevel)
-	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {}", level.Emergency.GetLevelName())), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {.*?}", level.Emergency.GetLevelName())), mockWriter.LastMessage)
 
 	log.Alertf("hello %s", "world")
 	assert.Equal(t, level.Alert, mockWriter.LastLevel)
-	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {}", level.Alert.GetLevelName())), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {.*?}", level.Alert.GetLevelName())), mockWriter.LastMessage)
 
 	log.Criticalf("hello %s", "world")
 	assert.Equal(t, level.Critical, mockWriter.LastLevel)
-	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {}", level.Critical.GetLevelName())), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {.*?}", level.Critical.GetLevelName())), mockWriter.LastMessage)
 
 	log.Errorf("hello %s", "world")
 	assert.Equal(t, level.Error, mockWriter.LastLevel)
-	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {}", level.Error.GetLevelName())), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {.*?}", level.Error.GetLevelName())), mockWriter.LastMessage)
 
 	log.Warningf("hello %s", "world")
 	assert.Equal(t, level.Warning, mockWriter.LastLevel)
@@ -190,7 +190,7 @@ func TestBasicLogf(t *testing.T) {
 
 	log.Debugf("hello %s", "world")
 	assert.Equal(t, level.Debug, mockWriter.LastLevel)
-	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {}", level.Debug.GetLevelName())), mockWriter.LastMessage)
+	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf("^\\[.*?\\] %s .*? hello world {.*?}", level.Debug.GetLevelName())), mockWriter.LastMessage)
 }
 
 func TestLogger_ReOpenClose(t *testing.T) {

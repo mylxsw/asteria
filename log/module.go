@@ -350,10 +350,9 @@ func (module *AsteriaLogger) Output(callDepth int, le level.Level, userContext F
 	}
 
 	moduleName := module.moduleName
-
-	if module.dynamicModuleName || module.fileLine {
+	if module.dynamicModuleName || module.fileLine || !level.In(le, []level.Level{level.Info, level.Notice, level.Warning}) {
 		cg := misc.CallGraph(callDepth)
-		if module.fileLine {
+		if module.fileLine || !level.In(le, []level.Level{level.Info, level.Notice, level.Warning}) {
 			logCtx.GlobalFields["file"] = cg.FileName
 			logCtx.GlobalFields["line"] = cg.Line
 			logCtx.GlobalFields["package"] = cg.PackageName

@@ -24,12 +24,12 @@ func NewDefaultFormatter(colorful bool) *DefaultFormatter {
 	return &DefaultFormatter{colorful: colorful}
 }
 
-// NewDefaultFormatter create a new default LogFormatter
+// NewDefaultCleanFormatter create a new default LogFormatter
 func NewDefaultCleanFormatter(colorful bool) *DefaultFormatter {
 	return &DefaultFormatter{colorful: colorful, stripCtrlAndExtFromUnicode: true}
 }
 
-// Event 日志格式化
+// Format 日志格式化
 func (formatter DefaultFormatter) Format(f event.Event) string {
 	var message, messageBody string
 	if formatter.stripCtrlAndExtFromUnicode {

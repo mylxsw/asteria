@@ -10,12 +10,12 @@ import (
 // JSONWithTimeFormatter json输格式化
 type JSONWithTimeFormatter struct{}
 
-// NewJSONFormatter create a new json LogFormatter
+// NewJSONWithTimeFormatter create a new json LogFormatter
 func NewJSONWithTimeFormatter() *JSONWithTimeFormatter {
 	return &JSONWithTimeFormatter{}
 }
 
-// Event 日志格式化
+// Format 日志格式化
 func (formatter JSONWithTimeFormatter) Format(f event.Event) string {
 	datetime := f.Time.Format(time.RFC3339)
 

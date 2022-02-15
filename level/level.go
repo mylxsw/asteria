@@ -87,3 +87,13 @@ func GetLevelByName(levelName string) Level {
 
 	return 0
 }
+
+func In(le Level, candidates []Level) bool {
+	for _, l := range candidates {
+		if l == le {
+			return true
+		}
+	}
+
+	return false
+}
