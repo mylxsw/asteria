@@ -45,7 +45,7 @@ func (formatter DefaultFormatter) Format(f event.Event) string {
 			misc.ColorfulLevelName(f.Level),
 			misc.ModuleNameAbbr(f.Module),
 			messageBody,
-			color.TextWrap(color.LightGrey, f.Fields.String()),
+			color.TextWrap(color.LightGrey, f.Fields.String("stacktrace")),
 		)
 	} else {
 		message = fmt.Sprintf(
@@ -54,8 +54,12 @@ func (formatter DefaultFormatter) Format(f event.Event) string {
 			f.Level.GetLevelName(),
 			f.Module,
 			messageBody,
-			f.Fields.String(),
+			f.Fields.String("stacktrace"),
 		)
+	}
+
+	if stacktrace, ok := f.Fields.GlobalFields["stacktrace"]; ok {
+		message = fmt.Sprintf("%s\n%s", message, stacktrace)
 	}
 
 	// 将多行内容增加前缀tab，与第一行内容分开
