@@ -67,9 +67,9 @@ func TestDefaultWithFileLine(t *testing.T) {
 	log.Default().WithFileLine(false)
 
 	log.Debug("hello")
-	assert.Regexp(t, regexp.MustCompile(`"#file"`), mockWriter.LastMessage)
-	assert.Regexp(t, regexp.MustCompile(`"#line"`), mockWriter.LastMessage)
-	assert.Regexp(t, regexp.MustCompile(`"#package"`), mockWriter.LastMessage)
+	assert.NotRegexp(t, regexp.MustCompile(`"#file"`), mockWriter.LastMessage)
+	assert.NotRegexp(t, regexp.MustCompile(`"#line"`), mockWriter.LastMessage)
+	assert.NotRegexp(t, regexp.MustCompile(`"#package"`), mockWriter.LastMessage)
 
 	log.Info("hello")
 	assert.NotRegexp(t, regexp.MustCompile(`"#file"`), mockWriter.LastMessage)
@@ -180,9 +180,9 @@ func TestLogger_WithFileLine(t *testing.T) {
 	logger.WithFileLine(false)
 
 	logger.Debug("hello")
-	assert.Regexp(t, regexp.MustCompile(`"#file"`), mockWriter.LastMessage)
-	assert.Regexp(t, regexp.MustCompile(`"#line"`), mockWriter.LastMessage)
-	assert.Regexp(t, regexp.MustCompile(`"#package"`), mockWriter.LastMessage)
+	assert.NotRegexp(t, regexp.MustCompile(`"#file"`), mockWriter.LastMessage)
+	assert.NotRegexp(t, regexp.MustCompile(`"#line"`), mockWriter.LastMessage)
+	assert.NotRegexp(t, regexp.MustCompile(`"#package"`), mockWriter.LastMessage)
 
 	logger.Info("hello")
 	assert.NotRegexp(t, regexp.MustCompile(`"#file"`), mockWriter.LastMessage)
@@ -310,9 +310,9 @@ func TestAll_WithFileLine(t *testing.T) {
 
 	log.All().WithFileLine(false)
 	log.Debug("hello")
-	assert.Regexp(t, regexp.MustCompile(`"#file"`), mockWriter.LastMessage)
-	assert.Regexp(t, regexp.MustCompile(`"#line"`), mockWriter.LastMessage)
-	assert.Regexp(t, regexp.MustCompile(`"#package"`), mockWriter.LastMessage)
+	assert.NotRegexp(t, regexp.MustCompile(`"#file"`), mockWriter.LastMessage)
+	assert.NotRegexp(t, regexp.MustCompile(`"#line"`), mockWriter.LastMessage)
+	assert.NotRegexp(t, regexp.MustCompile(`"#package"`), mockWriter.LastMessage)
 
 	log.Info("hello")
 	assert.NotRegexp(t, regexp.MustCompile(`"#file"`), mockWriter.LastMessage)
@@ -327,9 +327,9 @@ func TestAll_WithFileLine(t *testing.T) {
 
 	log.All().WithFileLine(false)
 	module1.Debug("hello")
-	assert.Regexp(t, regexp.MustCompile(`"#file"`), mockWriter.LastMessage)
-	assert.Regexp(t, regexp.MustCompile(`"#line"`), mockWriter.LastMessage)
-	assert.Regexp(t, regexp.MustCompile(`"#package"`), mockWriter.LastMessage)
+	assert.NotRegexp(t, regexp.MustCompile(`"#file"`), mockWriter.LastMessage)
+	assert.NotRegexp(t, regexp.MustCompile(`"#line"`), mockWriter.LastMessage)
+	assert.NotRegexp(t, regexp.MustCompile(`"#package"`), mockWriter.LastMessage)
 	module1.Info("hello")
 	assert.NotRegexp(t, regexp.MustCompile(`"#file"`), mockWriter.LastMessage)
 	assert.NotRegexp(t, regexp.MustCompile(`"#line"`), mockWriter.LastMessage)
