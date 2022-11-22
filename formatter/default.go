@@ -40,7 +40,7 @@ func (formatter DefaultFormatter) Format(f event.Event) string {
 
 	if formatter.colorful {
 		message = fmt.Sprintf(
-			"[%s] %s %-20s %s %s",
+			"[%s] %s %s %s %s",
 			f.Time.Format(time.RFC3339),
 			misc.ColorfulLevelName(f.Level),
 			misc.ModuleNameAbbr(f.Module),
