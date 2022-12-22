@@ -2,10 +2,11 @@ package log
 
 import (
 	"fmt"
-	"github.com/mylxsw/asteria/filter"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/mylxsw/asteria/filter"
 
 	"github.com/mylxsw/asteria/event"
 	"github.com/mylxsw/asteria/formatter"
@@ -451,6 +452,19 @@ func (module *AsteriaLogger) Close() error {
 
 func (module *AsteriaLogger) F(fields M) Logger {
 	return module.WithFields(Fields(fields))
+}
+
+func (module *AsteriaLogger) KV(kvs ...interface{}) Logger {
+	f := Fields{}
+	for i := 0; i < len(kvs); i += 2 {
+		if i+1 >= len(kvs) {
+			f[fmt.Sprintf("%v", kvs[i])] = nil
+		} else {
+			f[fmt.Sprintf("%v", kvs[i])] = kvs[i+1]
+		}
+	}
+
+	return module.WithFields(f)
 }
 
 // WithFields 带有上下文信息的日志输出

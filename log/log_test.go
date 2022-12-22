@@ -2,9 +2,10 @@ package log_test
 
 import (
 	"fmt"
-	"github.com/mylxsw/asteria/filter"
 	"regexp"
 	"testing"
+
+	"github.com/mylxsw/asteria/filter"
 
 	"github.com/mylxsw/asteria/event"
 	"github.com/mylxsw/asteria/formatter"
@@ -272,4 +273,7 @@ func TestLoggers_WithFields(t *testing.T) {
 
 	log.With(123).Debugf("hello, world")
 	assert.Regexp(t, regexp.MustCompile("\"@\":123"), mockWriter.LastMessage)
+
+	log.KV("abc", 123, "def").Debugf("hello, world")
+	assert.Regexp(t, regexp.MustCompile("\"abc\":123"), mockWriter.LastMessage)
 }

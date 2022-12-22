@@ -64,6 +64,10 @@ func F(fields M) Logger {
 	return Default().F(fields)
 }
 
+func KV(kvs ...interface{}) Logger {
+	return Default().KV(kvs...)
+}
+
 func WithFields(fields Fields) Logger {
 	return Default().WithFields(fields)
 }

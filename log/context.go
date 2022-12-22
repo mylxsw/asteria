@@ -53,6 +53,10 @@ func (logger *ContextLogger) F(fields M) Logger {
 	return logger.WithFields(Fields(fields))
 }
 
+func (logger *ContextLogger) KV(kvs ...interface{}) Logger {
+	return logger.logger.KV(kvs...)
+}
+
 // WithFields 带有上下文信息的日志输出
 func (logger *ContextLogger) WithFields(c Fields) Logger {
 	c2 := make(Fields)

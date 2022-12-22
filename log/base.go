@@ -1,6 +1,7 @@
 package log
 
 type Logger interface {
+	KV(kvs ...interface{}) Logger
 	F(fields M) Logger
 	WithFields(c Fields) Logger
 	With(data interface{}) Logger
